@@ -7601,11 +7601,29 @@ var $author$project$Test$Runner$Node$run = F2(
 				});
 		}
 	});
+var $elm$core$String$contains = _String_contains;
+var $elm$core$Char$toLower = _Char_toLower;
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$GameLogic$calculateRemainingGuesses = F3(
+	function (word, guessedLetters, initialGuesses) {
+		var lowerWord = $elm$core$String$toLower(word);
+		var lowerGuessed = A2($elm$core$List$map, $elm$core$Char$toLower, guessedLetters);
+		var wrongGuesses = A2(
+			$elm$core$List$filter,
+			function (letter) {
+				return !A2(
+					$elm$core$String$contains,
+					$elm$core$String$fromChar(letter),
+					lowerWord);
+			},
+			lowerGuessed);
+		var wrongGuessCount = $elm$core$List$length(wrongGuesses);
+		return initialGuesses - wrongGuessCount;
+	});
 var $elm_explorations$test$Test$Runner$Failure$Equality = F2(
 	function (a, b) {
 		return {$: 'Equality', a: a, b: b};
 	});
-var $elm$core$String$contains = _String_contains;
 var $elm_explorations$test$Test$Expectation$Pass = function (a) {
 	return {$: 'Pass', a: a};
 };
@@ -7655,8 +7673,6 @@ var $elm$core$List$member = F2(
 			},
 			xs);
 	});
-var $elm$core$Char$toLower = _Char_toLower;
-var $elm$core$String$toLower = _String_toLower;
 var $author$project$GameLogic$getMaskedWord = F2(
 	function (word, guessedLetters) {
 		var lowerWord = $elm$core$String$toLower(word);
@@ -7709,16 +7725,10 @@ var $author$project$GameLogic$isLetterInWord = F2(
 			$elm$core$String$toLower(word));
 	});
 var $author$project$GameLogic$isValidGuess = F2(
-	function (input, guessedLetters) {
-		var _v0 = $elm$core$String$toList(input);
-		if (_v0.b && (!_v0.b.b)) {
-			var _char = _v0.a;
-			var lowerGuessed = A2($elm$core$List$map, $elm$core$Char$toLower, guessedLetters);
-			var lowerChar = $elm$core$Char$toLower(_char);
-			return $elm$core$Char$isAlpha(_char) && (!A2($elm$core$List$member, lowerChar, lowerGuessed));
-		} else {
-			return false;
-		}
+	function (_char, guessedLetters) {
+		var lowerGuessed = A2($elm$core$List$map, $elm$core$Char$toLower, guessedLetters);
+		var lowerChar = $elm$core$Char$toLower(_char);
+		return $elm$core$Char$isAlpha(_char) && (!A2($elm$core$List$member, lowerChar, lowerGuessed));
 	});
 var $elm_explorations$test$Test$Internal$blankDescriptionFailure = $elm_explorations$test$Test$Internal$failNow(
 	{
@@ -8071,7 +8081,7 @@ var $author$project$GameLogicTest$suite = A2(
 							true,
 							A2(
 								$author$project$GameLogic$isValidGuess,
-								'a',
+								_Utils_chr('a'),
 								_List_fromArray(
 									[
 										_Utils_chr('b')
@@ -8079,50 +8089,14 @@ var $author$project$GameLogicTest$suite = A2(
 					}),
 					A2(
 					$elm_explorations$test$Test$test,
-					'returns False for empty string',
-					function (_v22) {
-						return A2(
-							$elm_explorations$test$Expect$equal,
-							false,
-							A2($author$project$GameLogic$isValidGuess, '', _List_Nil));
-					}),
-					A2(
-					$elm_explorations$test$Test$test,
-					'returns False for multiple letters',
-					function (_v23) {
-						return A2(
-							$elm_explorations$test$Expect$equal,
-							false,
-							A2($author$project$GameLogic$isValidGuess, 'ab', _List_Nil));
-					}),
-					A2(
-					$elm_explorations$test$Test$test,
-					'returns False for number',
-					function (_v24) {
-						return A2(
-							$elm_explorations$test$Expect$equal,
-							false,
-							A2($author$project$GameLogic$isValidGuess, '1', _List_Nil));
-					}),
-					A2(
-					$elm_explorations$test$Test$test,
-					'returns False for special character',
-					function (_v25) {
-						return A2(
-							$elm_explorations$test$Expect$equal,
-							false,
-							A2($author$project$GameLogic$isValidGuess, '!', _List_Nil));
-					}),
-					A2(
-					$elm_explorations$test$Test$test,
 					'returns False for already guessed letter',
-					function (_v26) {
+					function (_v22) {
 						return A2(
 							$elm_explorations$test$Expect$equal,
 							false,
 							A2(
 								$author$project$GameLogic$isValidGuess,
-								'a',
+								_Utils_chr('a'),
 								_List_fromArray(
 									[
 										_Utils_chr('a')
@@ -8131,17 +8105,464 @@ var $author$project$GameLogicTest$suite = A2(
 					A2(
 					$elm_explorations$test$Test$test,
 					'is case insensitive for already guessed check',
-					function (_v27) {
+					function (_v23) {
 						return A2(
 							$elm_explorations$test$Expect$equal,
 							false,
 							A2(
 								$author$project$GameLogic$isValidGuess,
-								'A',
+								_Utils_chr('A'),
 								_List_fromArray(
 									[
 										_Utils_chr('a')
 									])));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns False for non-alphabetic character',
+					function (_v24) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							false,
+							A2(
+								$author$project$GameLogic$isValidGuess,
+								_Utils_chr('1'),
+								_List_Nil));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns False for special character',
+					function (_v25) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							false,
+							A2(
+								$author$project$GameLogic$isValidGuess,
+								_Utils_chr('!'),
+								_List_Nil));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns True for uppercase letter not already guessed',
+					function (_v26) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							true,
+							A2(
+								$author$project$GameLogic$isValidGuess,
+								_Utils_chr('B'),
+								_List_fromArray(
+									[
+										_Utils_chr('a')
+									])));
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'calculateRemainingGuesses',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns same count when correct guess is made',
+					function (_v27) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							6,
+							A3(
+								$author$project$GameLogic$calculateRemainingGuesses,
+								'cat',
+								_List_fromArray(
+									[
+										_Utils_chr('c')
+									]),
+								6));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'decrements count when wrong guess is made',
+					function (_v28) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							5,
+							A3(
+								$author$project$GameLogic$calculateRemainingGuesses,
+								'cat',
+								_List_fromArray(
+									[
+										_Utils_chr('z')
+									]),
+								6));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles multiple correct guesses',
+					function (_v29) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							6,
+							A3(
+								$author$project$GameLogic$calculateRemainingGuesses,
+								'cat',
+								_List_fromArray(
+									[
+										_Utils_chr('c'),
+										_Utils_chr('a')
+									]),
+								6));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles multiple wrong guesses',
+					function (_v30) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							4,
+							A3(
+								$author$project$GameLogic$calculateRemainingGuesses,
+								'cat',
+								_List_fromArray(
+									[
+										_Utils_chr('z'),
+										_Utils_chr('x')
+									]),
+								6));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles mixed correct and wrong guesses',
+					function (_v31) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							4,
+							A3(
+								$author$project$GameLogic$calculateRemainingGuesses,
+								'cat',
+								_List_fromArray(
+									[
+										_Utils_chr('c'),
+										_Utils_chr('z'),
+										_Utils_chr('a'),
+										_Utils_chr('x')
+									]),
+								6));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles empty guessed letters list',
+					function (_v32) {
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							6,
+							A3($author$project$GameLogic$calculateRemainingGuesses, 'cat', _List_Nil, 6));
+					})
+				]))
+		]));
+var $author$project$Types$Easy = {$: 'Easy'};
+var $author$project$Types$Hard = {$: 'Hard'};
+var $author$project$Types$Medium = {$: 'Medium'};
+var $elm_explorations$test$Expect$allHelp = F2(
+	function (list, query) {
+		allHelp:
+		while (true) {
+			if (!list.b) {
+				return $elm_explorations$test$Expect$pass;
+			} else {
+				var check = list.a;
+				var rest = list.b;
+				var _v1 = check(query);
+				if (_v1.$ === 'Pass') {
+					var $temp$list = rest,
+						$temp$query = query;
+					list = $temp$list;
+					query = $temp$query;
+					continue allHelp;
+				} else {
+					var outcome = _v1;
+					return outcome;
+				}
+			}
+		}
+	});
+var $elm_explorations$test$Expect$all = F2(
+	function (list, query) {
+		return $elm$core$List$isEmpty(list) ? $elm_explorations$test$Test$Expectation$fail(
+			{
+				description: 'Expect.all was given an empty list. You must make at least one expectation to have a valid test!',
+				reason: $elm_explorations$test$Test$Runner$Failure$Invalid($elm_explorations$test$Test$Runner$Failure$EmptyList)
+			}) : A2($elm_explorations$test$Expect$allHelp, list, query);
+	});
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $author$project$Words$easyWords = _List_fromArray(
+	['cat', 'dog', 'sun', 'moon', 'tree', 'book', 'fish', 'bird', 'car', 'house', 'apple', 'water', 'fire', 'wind', 'rock', 'star', 'love', 'hope', 'time', 'life', 'green', 'blue', 'happy', 'smile', 'peace', 'music', 'dance', 'light', 'magic', 'dream']);
+var $author$project$Words$hardWords = _List_fromArray(
+	['wonderful', 'beautiful', 'magnificent', 'incredible', 'spectacular', 'mysterious', 'adventurous', 'dangerous', 'comfortable', 'fantastic', 'extraordinary', 'independent', 'responsibility', 'organization', 'imagination', 'conversation', 'celebration', 'inspiration', 'determination', 'understanding', 'kindergarten', 'university', 'playground', 'neighborhood', 'grandmother', 'grandfather', 'basketball', 'volleyball', 'automobile', 'helicopter']);
+var $author$project$Words$mediumWords = _List_fromArray(
+	['garden', 'forest', 'window', 'rainbow', 'thunder', 'kitchen', 'bedroom', 'library', 'hospital', 'journey', 'mystery', 'courage', 'freedom', 'justice', 'wisdom', 'dolphin', 'octopus', 'hamster', 'chicken', 'rabbit', 'turtle', 'planet', 'bridge', 'castle', 'flower', 'silver', 'golden', 'purple', 'orange', 'brother']);
+var $author$project$Words$getWordsByDifficulty = function (difficulty) {
+	switch (difficulty.$) {
+		case 'Easy':
+			return $author$project$Words$easyWords;
+		case 'Medium':
+			return $author$project$Words$mediumWords;
+		default:
+			return $author$project$Words$hardWords;
+	}
+};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$Words$getRandomWord = F2(
+	function (difficulty, seed) {
+		var words = $author$project$Words$getWordsByDifficulty(difficulty);
+		var wordArray = $elm$core$Array$fromList(words);
+		var arrayLength = $elm$core$Array$length(wordArray);
+		var index = A2(
+			$elm$core$Basics$modBy,
+			arrayLength,
+			$elm$core$Basics$abs(seed));
+		var _v0 = A2($elm$core$Array$get, index, wordArray);
+		if (_v0.$ === 'Just') {
+			var word = _v0.a;
+			return word;
+		} else {
+			if (words.b) {
+				var first = words.a;
+				return first;
+			} else {
+				return 'error';
+			}
+		}
+	});
+var $elm_explorations$test$Expect$notEqual = A2($elm_explorations$test$Expect$equateWith, 'Expect.notEqual', $elm$core$Basics$neq);
+var $author$project$WordsTest$suite = A2(
+	$elm_explorations$test$Test$describe,
+	'Words module',
+	_List_fromArray(
+		[
+			A2(
+			$elm_explorations$test$Test$describe,
+			'getWordsByDifficulty',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns easy words with 3-5 letters',
+					function (_v0) {
+						var words = $author$project$Words$getWordsByDifficulty($author$project$Types$Easy);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (_v1) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										$elm$core$List$length(words) >= 20);
+								},
+									function (_v2) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										A2(
+											$elm$core$List$all,
+											function (word) {
+												return ($elm$core$String$length(word) >= 3) && ($elm$core$String$length(word) <= 5);
+											},
+											words));
+								},
+									function (_v3) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										!$elm$core$List$isEmpty(words));
+								}
+								]),
+							_Utils_Tuple0);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns medium words with 6-8 letters',
+					function (_v4) {
+						var words = $author$project$Words$getWordsByDifficulty($author$project$Types$Medium);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (_v5) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										$elm$core$List$length(words) >= 20);
+								},
+									function (_v6) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										A2(
+											$elm$core$List$all,
+											function (word) {
+												return ($elm$core$String$length(word) >= 6) && ($elm$core$String$length(word) <= 8);
+											},
+											words));
+								},
+									function (_v7) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										!$elm$core$List$isEmpty(words));
+								}
+								]),
+							_Utils_Tuple0);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns hard words with 9+ letters',
+					function (_v8) {
+						var words = $author$project$Words$getWordsByDifficulty($author$project$Types$Hard);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (_v9) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										$elm$core$List$length(words) >= 20);
+								},
+									function (_v10) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										A2(
+											$elm$core$List$all,
+											function (word) {
+												return $elm$core$String$length(word) >= 9;
+											},
+											words));
+								},
+									function (_v11) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										true,
+										!$elm$core$List$isEmpty(words));
+								}
+								]),
+							_Utils_Tuple0);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'each difficulty returns different word lists',
+					function (_v12) {
+						var mediumWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Medium);
+						var hardWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Hard);
+						var easyWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Easy);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (_v13) {
+									return A2($elm_explorations$test$Expect$notEqual, easyWords, mediumWords);
+								},
+									function (_v14) {
+									return A2($elm_explorations$test$Expect$notEqual, mediumWords, hardWords);
+								},
+									function (_v15) {
+									return A2($elm_explorations$test$Expect$notEqual, easyWords, hardWords);
+								}
+								]),
+							_Utils_Tuple0);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'getRandomWord',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns a word from easy difficulty list',
+					function (_v16) {
+						var word = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 0);
+						var easyWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Easy);
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							true,
+							A2($elm$core$List$member, word, easyWords));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns a word from medium difficulty list',
+					function (_v17) {
+						var word = A2($author$project$Words$getRandomWord, $author$project$Types$Medium, 0);
+						var mediumWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Medium);
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							true,
+							A2($elm$core$List$member, word, mediumWords));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns a word from hard difficulty list',
+					function (_v18) {
+						var word = A2($author$project$Words$getRandomWord, $author$project$Types$Hard, 0);
+						var hardWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Hard);
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							true,
+							A2($elm$core$List$member, word, hardWords));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns different words for different seed values',
+					function (_v19) {
+						var word5 = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 4);
+						var word4 = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 3);
+						var word3 = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 2);
+						var word2 = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 1);
+						var word1 = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 0);
+						var words = _List_fromArray(
+							[word1, word2, word3, word4, word5]);
+						var uniqueWords = $elm$core$List$length(
+							A3(
+								$elm$core$List$foldl,
+								F2(
+									function (word, acc) {
+										return A2($elm$core$List$member, word, acc) ? acc : A2($elm$core$List$cons, word, acc);
+									}),
+								_List_Nil,
+								words));
+						return A2($elm_explorations$test$Expect$equal, true, uniqueWords > 1);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'returns same word for same seed value',
+					function (_v20) {
+						var word2 = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 42);
+						var word1 = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 42);
+						return A2($elm_explorations$test$Expect$equal, word1, word2);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles negative seed values',
+					function (_v21) {
+						var word = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, -1);
+						var easyWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Easy);
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							true,
+							A2($elm$core$List$member, word, easyWords));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles large seed values',
+					function (_v22) {
+						var word = A2($author$project$Words$getRandomWord, $author$project$Types$Easy, 999999);
+						var easyWords = $author$project$Words$getWordsByDifficulty($author$project$Types$Easy);
+						return A2(
+							$elm_explorations$test$Expect$equal,
+							true,
+							A2($elm$core$List$member, word, easyWords));
 					})
 				]))
 		]));
@@ -8150,11 +8571,11 @@ var $author$project$Test$Generated$Main$main = A2(
 	{
 		globs: _List_Nil,
 		paths: _List_fromArray(
-			['/home/lars/projects/hangman-elm/tests/GameLogicTest.elm']),
+			['/home/lars/projects/hangman-elm/tests/GameLogicTest.elm', '/home/lars/projects/hangman-elm/tests/WordsTest.elm']),
 		processes: 4,
 		report: $author$project$Test$Reporter$Reporter$ConsoleReport($author$project$Console$Text$Monochrome),
 		runs: 100,
-		seed: 405905293467228
+		seed: 99883479280806
 	},
 	_List_fromArray(
 		[
@@ -8163,12 +8584,18 @@ var $author$project$Test$Generated$Main$main = A2(
 			_List_fromArray(
 				[
 					$author$project$Test$Runner$Node$check($author$project$GameLogicTest$suite)
+				])),
+			_Utils_Tuple2(
+			'WordsTest',
+			_List_fromArray(
+				[
+					$author$project$Test$Runner$Node$check($author$project$WordsTest$suite)
 				]))
 		]));
 _Platform_export({'Test':{'Generated':{'Main':{'init':$author$project$Test$Generated$Main$main($elm$json$Json$Decode$int)(0)}}}});}(this));
 return this.Elm;
 })({});
-var pipeFilename = "/tmp/elm_test-86363.sock";
+var pipeFilename = "/tmp/elm_test-108049.sock";
 var net = require('net'),
   client = net.createConnection(pipeFilename);
 

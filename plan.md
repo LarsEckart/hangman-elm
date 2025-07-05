@@ -37,44 +37,44 @@ hangman-elm/
 ### Phase 3: Core Game Logic (Game.elm) - TDD Approach
 
 #### 3.1: Letter Validation Functions
-- [ ] **Write tests first** for `isLetterInWord`
+- [x] **Write tests first** for `isLetterInWord`
   - Test letter exists in word
   - Test letter doesn't exist
   - Test case insensitivity
-- [ ] **Implement** `isLetterInWord : Char -> String -> Bool`
-- [ ] **Write tests first** for `isValidGuess`
+- [x] **Implement** `isLetterInWord : Char -> String -> Bool`
+- [x] **Write tests first** for `isValidGuess`
   - Test single letter input
   - Test already guessed letters
   - Test invalid characters
-- [ ] **Implement** `isValidGuess : Char -> List Char -> Bool`
+- [x] **Implement** `isValidGuess : Char -> List Char -> Bool`
 
 #### 3.2: Word Display Functions
-- [ ] **Write tests first** for `getMaskedWord`
+- [x] **Write tests first** for `getMaskedWord`
   - Test no letters guessed (all underscores)
   - Test some letters guessed
   - Test all letters guessed
   - Test case insensitivity
-- [ ] **Implement** `getMaskedWord : String -> List Char -> String`
+- [x] **Implement** `getMaskedWord : String -> List Char -> String`
 
 #### 3.3: Game State Management
-- [ ] **Write tests first** for `updateGuessedLetters`
+- [x] **Write tests first** for `updateGuessedLetters`
   - Test adding new letter
   - Test not adding duplicate
-- [ ] **Implement** `updateGuessedLetters : Char -> List Char -> List Char`
-- [ ] **Write tests first** for `calculateRemainingGuesses`
+- [x] **Implement** `updateGuessedLetters : Char -> List Char -> List Char`
+- [x] **Write tests first** for `calculateRemainingGuesses`
   - Test correct guesses don't decrement
   - Test wrong guesses decrement
-- [ ] **Implement** `calculateRemainingGuesses : String -> List Char -> Int -> Int`
+- [x] **Implement** `calculateRemainingGuesses : String -> List Char -> Int -> Int`
 
 #### 3.4: Win/Loss Conditions
-- [ ] **Write tests first** for `isGameWon`
+- [x] **Write tests first** for `isGameWon`
   - Test all letters guessed
   - Test missing letters
-- [ ] **Implement** `isGameWon : String -> List Char -> Bool`
-- [ ] **Write tests first** for `isGameLost`
+- [x] **Implement** `isGameWon : String -> List Char -> Bool`
+- [x] **Write tests first** for `isGameLost`
   - Test remaining guesses > 0
   - Test remaining guesses = 0
-- [ ] **Implement** `isGameLost : Int -> Bool`
+- [x] **Implement** `isGameLost : Int -> Bool`
 
 ### Phase 4: Word Lists (Words.elm)
 - [ ] Create word lists for each difficulty

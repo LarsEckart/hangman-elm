@@ -46,14 +46,21 @@ isGameLost remainingGuesses =
     remainingGuesses <= 0
 
 
-isValidGuess : String -> List Char -> Bool
-isValidGuess input guessedLetters =
-    case String.toList input of
-        [char] ->
-            let
-                lowerChar = Char.toLower char
-                lowerGuessed = List.map Char.toLower guessedLetters
-            in
-            Char.isAlpha char && not (List.member lowerChar lowerGuessed)
-        _ ->
-            False
+isValidGuess : Char -> List Char -> Bool
+isValidGuess char guessedLetters =
+    let
+        lowerChar = Char.toLower char
+        lowerGuessed = List.map Char.toLower guessedLetters
+    in
+    Char.isAlpha char && not (List.member lowerChar lowerGuessed)
+
+
+calculateRemainingGuesses : String -> List Char -> Int -> Int
+calculateRemainingGuesses word guessedLetters initialGuesses =
+    let
+        lowerWord = String.toLower word
+        lowerGuessed = List.map Char.toLower guessedLetters
+        wrongGuesses = List.filter (\letter -> not (String.contains (String.fromChar letter) lowerWord)) lowerGuessed
+        wrongGuessCount = List.length wrongGuesses
+    in
+    initialGuesses - wrongGuessCount

@@ -105,31 +105,53 @@ suite =
         , describe "isValidGuess"
             [ test "returns True for single letter" <|
                 \_ ->
-                    isValidGuess "a" ['b']
+                    isValidGuess 'a' ['b']
                         |> Expect.equal True
-            , test "returns False for empty string" <|
-                \_ ->
-                    isValidGuess "" []
-                        |> Expect.equal False
-            , test "returns False for multiple letters" <|
-                \_ ->
-                    isValidGuess "ab" []
-                        |> Expect.equal False
-            , test "returns False for number" <|
-                \_ ->
-                    isValidGuess "1" []
-                        |> Expect.equal False
-            , test "returns False for special character" <|
-                \_ ->
-                    isValidGuess "!" []
-                        |> Expect.equal False
             , test "returns False for already guessed letter" <|
                 \_ ->
-                    isValidGuess "a" ['a']
+                    isValidGuess 'a' ['a']
                         |> Expect.equal False
             , test "is case insensitive for already guessed check" <|
                 \_ ->
-                    isValidGuess "A" ['a']
+                    isValidGuess 'A' ['a']
                         |> Expect.equal False
+            , test "returns False for non-alphabetic character" <|
+                \_ ->
+                    isValidGuess '1' []
+                        |> Expect.equal False
+            , test "returns False for special character" <|
+                \_ ->
+                    isValidGuess '!' []
+                        |> Expect.equal False
+            , test "returns True for uppercase letter not already guessed" <|
+                \_ ->
+                    isValidGuess 'B' ['a']
+                        |> Expect.equal True
+            ]
+        , describe "calculateRemainingGuesses"
+            [ test "returns same count when correct guess is made" <|
+                \_ ->
+                    calculateRemainingGuesses "cat" ['c'] 6
+                        |> Expect.equal 6
+            , test "decrements count when wrong guess is made" <|
+                \_ ->
+                    calculateRemainingGuesses "cat" ['z'] 6
+                        |> Expect.equal 5
+            , test "handles multiple correct guesses" <|
+                \_ ->
+                    calculateRemainingGuesses "cat" ['c', 'a'] 6
+                        |> Expect.equal 6
+            , test "handles multiple wrong guesses" <|
+                \_ ->
+                    calculateRemainingGuesses "cat" ['z', 'x'] 6
+                        |> Expect.equal 4
+            , test "handles mixed correct and wrong guesses" <|
+                \_ ->
+                    calculateRemainingGuesses "cat" ['c', 'z', 'a', 'x'] 6
+                        |> Expect.equal 4
+            , test "handles empty guessed letters list" <|
+                \_ ->
+                    calculateRemainingGuesses "cat" [] 6
+                        |> Expect.equal 6
             ]
         ]
