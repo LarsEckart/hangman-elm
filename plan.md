@@ -77,47 +77,47 @@ hangman-elm/
 - [x] **Implement** `isGameLost : Int -> Bool`
 
 ### Phase 4: Word Lists (Words.elm)
-- [ ] Create word lists for each difficulty
+- [x] Create word lists for each difficulty
   - Easy: 3-5 letter words (20+ words)
   - Medium: 6-8 letter words (20+ words)
   - Hard: 9+ letter words (20+ words)
-- [ ] **Write tests first** for `getRandomWord`
+- [x] **Write tests first** for `getRandomWord`
   - Test returns word from correct difficulty
   - Test word length matches difficulty
-- [ ] **Implement** `getRandomWord : Difficulty -> Int -> String`
-- [ ] **Write tests first** for `getWordsByDifficulty`
-- [ ] **Implement** `getWordsByDifficulty : Difficulty -> List String`
+- [x] **Implement** `getRandomWord : Difficulty -> Int -> String`
+- [x] **Write tests first** for `getWordsByDifficulty`
+- [x] **Implement** `getWordsByDifficulty : Difficulty -> List String`
 
 ### Phase 5: Update Logic (Main.elm) - TDD Approach
-- [ ] **Write tests first** for update function
+- [x] **Write tests first** for update function
   - Test StartGame message
   - Test SelectDifficulty message
   - Test GuessLetter message (valid/invalid)
   - Test PlayAgain message
   - Test screen transitions
-- [ ] **Implement** `update : Msg -> Model -> Model`
-- [ ] **Write tests first** for model initialization
-- [ ] **Implement** `init : Model`
+- [x] **Implement** `update : Msg -> Model -> Model`
+- [x] **Write tests first** for model initialization
+- [x] **Implement** `init : Model`
 
 ### Phase 6: View Implementation (Main.elm)
-- [ ] **Implement** `viewStartScreen : Html Msg`
+- [x] **Implement** `viewStartScreen : Html Msg`
   - Game title
   - Start button
-- [ ] **Implement** `viewDifficultySelection : Html Msg`
+- [x] **Implement** `viewDifficultySelection : Html Msg`
   - Three difficulty buttons
   - Clear descriptions
-- [ ] **Implement** `viewGameScreen : Model -> Html Msg`
+- [x] **Implement** `viewGameScreen : Model -> Html Msg`
   - Masked word display
   - Guessed letters display
   - Remaining guesses counter
   - Letter input field
   - Guess button
   - Game status messages
-- [ ] **Implement** `viewGameOver : Model -> Html Msg`
+- [x] **Implement** `viewGameOver : Model -> Html Msg`
   - Win/loss message
   - Reveal word if lost
   - Play again button
-- [ ] **Implement** main `view : Model -> Html Msg`
+- [x] **Implement** main `view : Model -> Html Msg`
 
 ### Phase 7: Integration and Testing
 - [ ] Run all tests and ensure they pass
