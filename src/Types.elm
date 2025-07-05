@@ -51,6 +51,7 @@ type Msg
     | PlayAgain
     | BackToStart
     | ClearError
+    | WordSelected Difficulty Int
 
 
 -- Constants for game configuration

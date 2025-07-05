@@ -4,58 +4,59 @@ import Browser
 import Html exposing (Html, div, h1, h2, p, button, input, text, span)
 import Html.Attributes exposing (class, type_, value, placeholder, disabled)
 import Html.Events exposing (onClick, onInput)
+import Random
 import Types exposing (..)
 import GameLogic exposing (..)
-import Words exposing (getRandomWord)
+import Words exposing (getRandomWord, getWordsByDifficulty)
 
 
 -- Initialize the application model
-init : Model
-init =
-    initialModel
+init : () -> (Model, Cmd Msg)
+init _ =
+    (initialModel, Cmd.none)
 
 
 -- Update function to handle all messages and state transitions
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         StartGame ->
-            { model 
+            ( { model 
             | currentScreen = DifficultySelection
             , errorMessage = Nothing
             }
+            , Cmd.none
+            )
         
         SelectDifficulty difficulty ->
             let
-                -- Use a simple seed based on the difficulty for deterministic testing
-                seed = case difficulty of
-                    Easy -> 0
-                    Medium -> 1
-                    Hard -> 2
-                
-                selectedWord = getRandomWord difficulty seed
+                words = getWordsByDifficulty difficulty
+                wordCount = List.length words
+                generator = Random.int 0 (wordCount - 1)
             in
-            { model 
-            | currentScreen = Game
-            , selectedDifficulty = Just difficulty
-            , currentWord = selectedWord
+            ( { model 
+            | selectedDifficulty = Just difficulty
             , guessedLetters = []
             , remainingGuesses = maxGuesses
             , gameState = Playing
             , userInput = ""
             , errorMessage = Nothing
             }
+            , Random.generate (WordSelected difficulty) generator
+            )
         
         UpdateInput input ->
-            { model 
+            ( { model 
             | userInput = input
             , errorMessage = Nothing
             }
+            , Cmd.none
+            )
         
         MakeGuess ->
             if model.gameState /= Playing then
                 -- Don't process guesses if game is already over
-                model
+                (model, Cmd.none)
             else
                 case validateGuess model.userInput model.guessedLetters of
                     Ok letter ->
@@ -82,7 +83,7 @@ update msg model =
                                 else
                                     Game
                         in
-                        { model 
+                        ( { model 
                         | guessedLetters = newGuessedLetters
                         , remainingGuesses = newRemainingGuesses
                         , gameState = newGameState
@@ -90,15 +91,19 @@ update msg model =
                         , userInput = ""
                         , errorMessage = Nothing
                         }
+                        , Cmd.none
+                        )
                     
                     Err errorMsg ->
-                        { model 
+                        ( { model 
                         | userInput = ""
                         , errorMessage = Just errorMsg
                         }
+                        , Cmd.none
+                        )
         
         PlayAgain ->
-            { model 
+            ( { model 
             | currentScreen = DifficultySelection
             , selectedDifficulty = Nothing
             , currentWord = ""
@@ -108,12 +113,27 @@ update msg model =
             , userInput = ""
             , errorMessage = Nothing
             }
+            , Cmd.none
+            )
         
         BackToStart ->
-            init
+            init ()
         
         ClearError ->
-            { model | errorMessage = Nothing }
+            ( { model | errorMessage = Nothing }
+            , Cmd.none
+            )
+        
+        WordSelected difficulty index ->
+            let
+                selectedWord = getRandomWord difficulty index
+            in
+            ( { model 
+            | currentScreen = Game
+            , currentWord = selectedWord
+            }
+            , Cmd.none
+            )
 
 
 -- VIEW FUNCTIONS
@@ -233,10 +253,11 @@ view model =
 -- Main program definition
 main : Program () Model Msg
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , update = update
         , view = view
+        , subscriptions = \_ -> Sub.none
         }
 
 
