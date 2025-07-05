@@ -27,12 +27,12 @@ hangman-elm/
 - [x] Create initial directory structure
 
 ### Phase 2: Type Definitions (Types.elm)
-- [ ] Define `GameScreen` type (Start, DifficultySelection, Game, GameOver)
-- [ ] Define `Difficulty` type (Easy, Medium, Hard)
-- [ ] Define `GameState` type (Playing, Won, Lost)
-- [ ] Define `Model` type with all necessary fields
-- [ ] Define `Msg` type for all user interactions
-- [ ] Create type aliases for clarity
+- [x] Define `GameScreen` type (Start, DifficultySelection, Game, GameOver)
+- [x] Define `Difficulty` type (Easy, Medium, Hard)
+- [x] Define `GameState` type (Playing, Won, Lost)
+- [x] Define `Model` type with all necessary fields
+- [x] Define `Msg` type for all user interactions
+- [x] Create type aliases for clarity
 
 ### Phase 3: Core Game Logic (Game.elm) - TDD Approach
 
