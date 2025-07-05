@@ -8258,9 +8258,27 @@ var $author$project$GameLogicTest$suite = A2(
 					})
 				]))
 		]));
+var $author$project$Types$BackToStart = {$: 'BackToStart'};
+var $author$project$Types$ClearError = {$: 'ClearError'};
+var $author$project$Types$DifficultySelection = {$: 'DifficultySelection'};
 var $author$project$Types$Easy = {$: 'Easy'};
+var $author$project$Types$Game = {$: 'Game'};
+var $author$project$Types$GameOver = {$: 'GameOver'};
 var $author$project$Types$Hard = {$: 'Hard'};
+var $author$project$Types$Lost = {$: 'Lost'};
+var $author$project$Types$MakeGuess = {$: 'MakeGuess'};
 var $author$project$Types$Medium = {$: 'Medium'};
+var $author$project$Types$PlayAgain = {$: 'PlayAgain'};
+var $author$project$Types$Playing = {$: 'Playing'};
+var $author$project$Types$SelectDifficulty = function (a) {
+	return {$: 'SelectDifficulty', a: a};
+};
+var $author$project$Types$Start = {$: 'Start'};
+var $author$project$Types$StartGame = {$: 'StartGame'};
+var $author$project$Types$UpdateInput = function (a) {
+	return {$: 'UpdateInput', a: a};
+};
+var $author$project$Types$Won = {$: 'Won'};
 var $elm_explorations$test$Expect$allHelp = F2(
 	function (list, query) {
 		allHelp:
@@ -8292,6 +8310,10 @@ var $elm_explorations$test$Expect$all = F2(
 				reason: $elm_explorations$test$Test$Runner$Failure$Invalid($elm_explorations$test$Test$Runner$Failure$EmptyList)
 			}) : A2($elm_explorations$test$Expect$allHelp, list, query);
 	});
+var $author$project$Types$maxGuesses = 6;
+var $author$project$Types$initialModel = {currentScreen: $author$project$Types$Start, currentWord: '', errorMessage: $elm$core$Maybe$Nothing, gameState: $author$project$Types$Playing, guessedLetters: _List_Nil, remainingGuesses: $author$project$Types$maxGuesses, selectedDifficulty: $elm$core$Maybe$Nothing, userInput: ''};
+var $author$project$Main$init = $author$project$Types$initialModel;
+var $elm_explorations$test$Expect$notEqual = A2($elm_explorations$test$Expect$equateWith, 'Expect.notEqual', $elm$core$Basics$neq);
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -8334,7 +8356,797 @@ var $author$project$Words$getRandomWord = F2(
 			}
 		}
 	});
-var $elm_explorations$test$Expect$notEqual = A2($elm_explorations$test$Expect$equateWith, 'Expect.notEqual', $elm$core$Basics$neq);
+var $author$project$Main$validateGuess = F2(
+	function (input, guessedLetters) {
+		var _v0 = $elm$core$String$toList(input);
+		if (!_v0.b) {
+			return $elm$core$Result$Err('Please enter a letter');
+		} else {
+			if (!_v0.b.b) {
+				var _char = _v0.a;
+				return (!$elm$core$Char$isAlpha(_char)) ? $elm$core$Result$Err('Please enter only letters') : (A2(
+					$elm$core$List$member,
+					$elm$core$Char$toLower(_char),
+					A2($elm$core$List$map, $elm$core$Char$toLower, guessedLetters)) ? $elm$core$Result$Err('You already guessed that letter') : $elm$core$Result$Ok(_char));
+			} else {
+				return $elm$core$Result$Err('Please enter only one letter');
+			}
+		}
+	});
+var $author$project$Main$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'StartGame':
+				return _Utils_update(
+					model,
+					{currentScreen: $author$project$Types$DifficultySelection, errorMessage: $elm$core$Maybe$Nothing});
+			case 'SelectDifficulty':
+				var difficulty = msg.a;
+				var seed = function () {
+					switch (difficulty.$) {
+						case 'Easy':
+							return 0;
+						case 'Medium':
+							return 1;
+						default:
+							return 2;
+					}
+				}();
+				var selectedWord = A2($author$project$Words$getRandomWord, difficulty, seed);
+				return _Utils_update(
+					model,
+					{
+						currentScreen: $author$project$Types$Game,
+						currentWord: selectedWord,
+						errorMessage: $elm$core$Maybe$Nothing,
+						gameState: $author$project$Types$Playing,
+						guessedLetters: _List_Nil,
+						remainingGuesses: $author$project$Types$maxGuesses,
+						selectedDifficulty: $elm$core$Maybe$Just(difficulty),
+						userInput: ''
+					});
+			case 'UpdateInput':
+				var input = msg.a;
+				return _Utils_update(
+					model,
+					{errorMessage: $elm$core$Maybe$Nothing, userInput: input});
+			case 'MakeGuess':
+				if (!_Utils_eq(model.gameState, $author$project$Types$Playing)) {
+					return model;
+				} else {
+					var _v2 = A2($author$project$Main$validateGuess, model.userInput, model.guessedLetters);
+					if (_v2.$ === 'Ok') {
+						var letter = _v2.a;
+						var newGuessedLetters = A2($author$project$GameLogic$updateGuessedLetters, letter, model.guessedLetters);
+						var newRemainingGuesses = A3($author$project$GameLogic$calculateRemainingGuesses, model.currentWord, newGuessedLetters, $author$project$Types$maxGuesses);
+						var newGameState = A2($author$project$GameLogic$isGameWon, model.currentWord, newGuessedLetters) ? $author$project$Types$Won : ($author$project$GameLogic$isGameLost(newRemainingGuesses) ? $author$project$Types$Lost : $author$project$Types$Playing);
+						var newScreen = (_Utils_eq(newGameState, $author$project$Types$Won) || _Utils_eq(newGameState, $author$project$Types$Lost)) ? $author$project$Types$GameOver : $author$project$Types$Game;
+						return _Utils_update(
+							model,
+							{currentScreen: newScreen, errorMessage: $elm$core$Maybe$Nothing, gameState: newGameState, guessedLetters: newGuessedLetters, remainingGuesses: newRemainingGuesses, userInput: ''});
+					} else {
+						var errorMsg = _v2.a;
+						return _Utils_update(
+							model,
+							{
+								errorMessage: $elm$core$Maybe$Just(errorMsg),
+								userInput: ''
+							});
+					}
+				}
+			case 'PlayAgain':
+				return _Utils_update(
+					model,
+					{currentScreen: $author$project$Types$DifficultySelection, currentWord: '', errorMessage: $elm$core$Maybe$Nothing, gameState: $author$project$Types$Playing, guessedLetters: _List_Nil, remainingGuesses: $author$project$Types$maxGuesses, selectedDifficulty: $elm$core$Maybe$Nothing, userInput: ''});
+			case 'BackToStart':
+				return $author$project$Main$init;
+			default:
+				return _Utils_update(
+					model,
+					{errorMessage: $elm$core$Maybe$Nothing});
+		}
+	});
+var $author$project$UpdateTest$suite = A2(
+	$elm_explorations$test$Test$describe,
+	'Update function and model initialization',
+	_List_fromArray(
+		[
+			A2(
+			$elm_explorations$test$Test$describe,
+			'Model initialization',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'init returns correct initial model',
+					function (_v0) {
+						var model = $author$project$Main$init;
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$Start);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.selectedDifficulty, $elm$core$Maybe$Nothing);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentWord, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.gameState, $author$project$Types$Playing);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.errorMessage, $elm$core$Maybe$Nothing);
+								}
+								]),
+							model);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'StartGame message',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'transitions from Start to DifficultySelection screen',
+					function (_v1) {
+						var initialModel = $author$project$Main$init;
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$StartGame, initialModel);
+						return A2($elm_explorations$test$Expect$equal, updatedModel.currentScreen, $author$project$Types$DifficultySelection);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'clears error message when starting game',
+					function (_v2) {
+						var modelWithError = _Utils_update(
+							$author$project$Main$init,
+							{
+								errorMessage: $elm$core$Maybe$Just('Previous error')
+							});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$StartGame, modelWithError);
+						return A2($elm_explorations$test$Expect$equal, updatedModel.errorMessage, $elm$core$Maybe$Nothing);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'SelectDifficulty message',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'transitions from DifficultySelection to Game screen with Easy difficulty',
+					function (_v3) {
+						var initialModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$DifficultySelection});
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$SelectDifficulty($author$project$Types$Easy),
+							initialModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$Game);
+								},
+									function (m) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										m.selectedDifficulty,
+										$elm$core$Maybe$Just($author$project$Types$Easy));
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$notEqual, m.currentWord, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.gameState, $author$project$Types$Playing);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'transitions from DifficultySelection to Game screen with Medium difficulty',
+					function (_v4) {
+						var initialModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$DifficultySelection});
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$SelectDifficulty($author$project$Types$Medium),
+							initialModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$Game);
+								},
+									function (m) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										m.selectedDifficulty,
+										$elm$core$Maybe$Just($author$project$Types$Medium));
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$notEqual, m.currentWord, '');
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'transitions from DifficultySelection to Game screen with Hard difficulty',
+					function (_v5) {
+						var initialModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$DifficultySelection});
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$SelectDifficulty($author$project$Types$Hard),
+							initialModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$Game);
+								},
+									function (m) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										m.selectedDifficulty,
+										$elm$core$Maybe$Just($author$project$Types$Hard));
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$notEqual, m.currentWord, '');
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'selected word length matches Easy difficulty requirements',
+					function (_v6) {
+						var initialModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$DifficultySelection});
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$SelectDifficulty($author$project$Types$Easy),
+							initialModel);
+						var wordLength = $elm$core$String$length(updatedModel.currentWord);
+						return A2($elm_explorations$test$Expect$equal, true, (wordLength >= 3) && (wordLength <= 5));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'selected word length matches Medium difficulty requirements',
+					function (_v7) {
+						var initialModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$DifficultySelection});
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$SelectDifficulty($author$project$Types$Medium),
+							initialModel);
+						var wordLength = $elm$core$String$length(updatedModel.currentWord);
+						return A2($elm_explorations$test$Expect$equal, true, (wordLength >= 6) && (wordLength <= 8));
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'selected word length matches Hard difficulty requirements',
+					function (_v8) {
+						var initialModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$DifficultySelection});
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$SelectDifficulty($author$project$Types$Hard),
+							initialModel);
+						var wordLength = $elm$core$String$length(updatedModel.currentWord);
+						return A2($elm_explorations$test$Expect$equal, true, wordLength >= 9);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'UpdateInput message',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'updates user input field',
+					function (_v9) {
+						var initialModel = $author$project$Main$init;
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$UpdateInput('a'),
+							initialModel);
+						return A2($elm_explorations$test$Expect$equal, updatedModel.userInput, 'a');
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'clears error message when updating input',
+					function (_v10) {
+						var modelWithError = _Utils_update(
+							$author$project$Main$init,
+							{
+								errorMessage: $elm$core$Maybe$Just('Previous error')
+							});
+						var updatedModel = A2(
+							$author$project$Main$update,
+							$author$project$Types$UpdateInput('b'),
+							modelWithError);
+						return A2($elm_explorations$test$Expect$equal, updatedModel.errorMessage, $elm$core$Maybe$Nothing);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'MakeGuess message',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles valid guess - correct letter',
+					function (_v11) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$Game, currentWord: 'cat', gameState: $author$project$Types$Playing, userInput: 'c'});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										m.guessedLetters,
+										_List_fromArray(
+											[
+												_Utils_chr('c')
+											]));
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.errorMessage, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles valid guess - incorrect letter',
+					function (_v12) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$Game, currentWord: 'cat', gameState: $author$project$Types$Playing, userInput: 'x'});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										m.guessedLetters,
+										_List_fromArray(
+											[
+												_Utils_chr('x')
+											]));
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses - 1);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.errorMessage, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles invalid guess - empty input',
+					function (_v13) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$Game, currentWord: 'cat', gameState: $author$project$Types$Playing, userInput: ''});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$notEqual, m.errorMessage, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles invalid guess - multiple characters',
+					function (_v14) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$Game, currentWord: 'cat', gameState: $author$project$Types$Playing, userInput: 'abc'});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$notEqual, m.errorMessage, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles invalid guess - already guessed letter',
+					function (_v15) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{
+								currentScreen: $author$project$Types$Game,
+								currentWord: 'cat',
+								gameState: $author$project$Types$Playing,
+								guessedLetters: _List_fromArray(
+									[
+										_Utils_chr('c'),
+										_Utils_chr('a')
+									]),
+								userInput: 'c'
+							});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										m.guessedLetters,
+										_List_fromArray(
+											[
+												_Utils_chr('c'),
+												_Utils_chr('a')
+											]));
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$notEqual, m.errorMessage, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'handles invalid guess - non-alphabetic character',
+					function (_v16) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$Game, currentWord: 'cat', gameState: $author$project$Types$Playing, userInput: '1'});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$notEqual, m.errorMessage, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'transitions to GameOver screen when game is won',
+					function (_v17) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{
+								currentScreen: $author$project$Types$Game,
+								currentWord: 'cat',
+								gameState: $author$project$Types$Playing,
+								guessedLetters: _List_fromArray(
+									[
+										_Utils_chr('c'),
+										_Utils_chr('a')
+									]),
+								userInput: 't'
+							});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$GameOver);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.gameState, $author$project$Types$Won);
+								},
+									function (m) {
+									return A2(
+										$elm_explorations$test$Expect$equal,
+										m.guessedLetters,
+										_List_fromArray(
+											[
+												_Utils_chr('c'),
+												_Utils_chr('a'),
+												_Utils_chr('t')
+											]));
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'transitions to GameOver screen when game is lost',
+					function (_v18) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{
+								currentScreen: $author$project$Types$Game,
+								currentWord: 'cat',
+								gameState: $author$project$Types$Playing,
+								guessedLetters: _List_fromArray(
+									[
+										_Utils_chr('x'),
+										_Utils_chr('y'),
+										_Utils_chr('w'),
+										_Utils_chr('v'),
+										_Utils_chr('u')
+									]),
+								remainingGuesses: 1,
+								userInput: 'z'
+							});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$GameOver);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.gameState, $author$project$Types$Lost);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, 0);
+								}
+								]),
+							updatedModel);
+					}),
+					A2(
+					$elm_explorations$test$Test$test,
+					'does not process guess when game is already over',
+					function (_v19) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{currentScreen: $author$project$Types$GameOver, currentWord: 'cat', gameState: $author$project$Types$Won, userInput: 'c'});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$MakeGuess, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$GameOver);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.gameState, $author$project$Types$Won);
+								}
+								]),
+							updatedModel);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'PlayAgain message',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'resets game state and transitions to DifficultySelection',
+					function (_v20) {
+						var gameOverModel = _Utils_update(
+							$author$project$Main$init,
+							{
+								currentScreen: $author$project$Types$GameOver,
+								currentWord: 'cat',
+								gameState: $author$project$Types$Won,
+								guessedLetters: _List_fromArray(
+									[
+										_Utils_chr('c'),
+										_Utils_chr('a'),
+										_Utils_chr('t')
+									]),
+								remainingGuesses: 3,
+								selectedDifficulty: $elm$core$Maybe$Just($author$project$Types$Easy)
+							});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$PlayAgain, gameOverModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$DifficultySelection);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentWord, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.gameState, $author$project$Types$Playing);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.errorMessage, $elm$core$Maybe$Nothing);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.selectedDifficulty, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'BackToStart message',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'resets to initial state and transitions to Start screen',
+					function (_v21) {
+						var gameModel = _Utils_update(
+							$author$project$Main$init,
+							{
+								currentScreen: $author$project$Types$Game,
+								currentWord: 'cat',
+								guessedLetters: _List_fromArray(
+									[
+										_Utils_chr('c'),
+										_Utils_chr('a')
+									]),
+								remainingGuesses: 4,
+								selectedDifficulty: $elm$core$Maybe$Just($author$project$Types$Medium),
+								userInput: 'test'
+							});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$BackToStart, gameModel);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$Start);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentWord, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.guessedLetters, _List_Nil);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.remainingGuesses, $author$project$Types$maxGuesses);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.gameState, $author$project$Types$Playing);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.userInput, '');
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.errorMessage, $elm$core$Maybe$Nothing);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.selectedDifficulty, $elm$core$Maybe$Nothing);
+								}
+								]),
+							updatedModel);
+					})
+				])),
+			A2(
+			$elm_explorations$test$Test$describe,
+			'ClearError message',
+			_List_fromArray(
+				[
+					A2(
+					$elm_explorations$test$Test$test,
+					'clears error message without changing other state',
+					function (_v22) {
+						var modelWithError = _Utils_update(
+							$author$project$Main$init,
+							{
+								currentScreen: $author$project$Types$Game,
+								currentWord: 'cat',
+								errorMessage: $elm$core$Maybe$Just('Test error')
+							});
+						var updatedModel = A2($author$project$Main$update, $author$project$Types$ClearError, modelWithError);
+						return A2(
+							$elm_explorations$test$Expect$all,
+							_List_fromArray(
+								[
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.errorMessage, $elm$core$Maybe$Nothing);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentScreen, $author$project$Types$Game);
+								},
+									function (m) {
+									return A2($elm_explorations$test$Expect$equal, m.currentWord, 'cat');
+								}
+								]),
+							updatedModel);
+					})
+				]))
+		]));
 var $author$project$WordsTest$suite = A2(
 	$elm_explorations$test$Test$describe,
 	'Words module',
@@ -8571,11 +9383,11 @@ var $author$project$Test$Generated$Main$main = A2(
 	{
 		globs: _List_Nil,
 		paths: _List_fromArray(
-			['/home/lars/projects/hangman-elm/tests/GameLogicTest.elm', '/home/lars/projects/hangman-elm/tests/WordsTest.elm']),
+			['/home/lars/projects/hangman-elm/tests/GameLogicTest.elm', '/home/lars/projects/hangman-elm/tests/UpdateTest.elm', '/home/lars/projects/hangman-elm/tests/WordsTest.elm']),
 		processes: 4,
 		report: $author$project$Test$Reporter$Reporter$ConsoleReport($author$project$Console$Text$Monochrome),
 		runs: 100,
-		seed: 99883479280806
+		seed: 123456
 	},
 	_List_fromArray(
 		[
@@ -8584,6 +9396,12 @@ var $author$project$Test$Generated$Main$main = A2(
 			_List_fromArray(
 				[
 					$author$project$Test$Runner$Node$check($author$project$GameLogicTest$suite)
+				])),
+			_Utils_Tuple2(
+			'UpdateTest',
+			_List_fromArray(
+				[
+					$author$project$Test$Runner$Node$check($author$project$UpdateTest$suite)
 				])),
 			_Utils_Tuple2(
 			'WordsTest',
@@ -8595,7 +9413,7 @@ var $author$project$Test$Generated$Main$main = A2(
 _Platform_export({'Test':{'Generated':{'Main':{'init':$author$project$Test$Generated$Main$main($elm$json$Json$Decode$int)(0)}}}});}(this));
 return this.Elm;
 })({});
-var pipeFilename = "/tmp/elm_test-108049.sock";
+var pipeFilename = "/tmp/elm_test-112581.sock";
 var net = require('net'),
   client = net.createConnection(pipeFilename);
 

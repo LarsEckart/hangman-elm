@@ -1,6 +1,7 @@
 module Test.Generated.Main exposing (main)
 
 import GameLogicTest
+import UpdateTest
 import WordsTest
 
 import Test.Reporter.Reporter exposing (Report(..))
@@ -13,17 +14,22 @@ main =
     Test.Runner.Node.run
         { runs = 100
         , report = ConsoleReport Monochrome
-        , seed = 99883479280806
+        , seed = 123456
         , processes = 4
         , globs =
             []
         , paths =
             [ "/home/lars/projects/hangman-elm/tests/GameLogicTest.elm"
+            , "/home/lars/projects/hangman-elm/tests/UpdateTest.elm"
             , "/home/lars/projects/hangman-elm/tests/WordsTest.elm"
             ]
         }
         [ ( "GameLogicTest"
           , [ Test.Runner.Node.check GameLogicTest.suite
+            ]
+          )
+        , ( "UpdateTest"
+          , [ Test.Runner.Node.check UpdateTest.suite
             ]
           )
         , ( "WordsTest"
