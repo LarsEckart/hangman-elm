@@ -13,8 +13,8 @@ main : Test.Runner.Node.TestProgram
 main =
     Test.Runner.Node.run
         { runs = 100
-        , report = ConsoleReport Monochrome
-        , seed = 400902293174231
+        , report = JsonReport
+        , seed = 150181712836994
         , processes = 4
         , globs =
             []

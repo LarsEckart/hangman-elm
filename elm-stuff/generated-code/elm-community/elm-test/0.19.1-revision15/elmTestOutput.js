@@ -2593,10 +2593,7 @@ var $elm$core$Set$toList = function (_v0) {
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
-var $author$project$Test$Reporter$Reporter$ConsoleReport = function (a) {
-	return {$: 'ConsoleReport', a: a};
-};
-var $author$project$Console$Text$Monochrome = {$: 'Monochrome'};
+var $author$project$Test$Reporter$Reporter$JsonReport = {$: 'JsonReport'};
 var $elm$core$Debug$todo = _Debug_todo;
 var $author$project$Test$Runner$Node$checkHelperReplaceMe___ = function (_v0) {
 	return _Debug_todo(
@@ -9385,9 +9382,9 @@ var $author$project$Test$Generated$Main$main = A2(
 		paths: _List_fromArray(
 			['/home/lars/projects/hangman-elm/tests/GameLogicTest.elm', '/home/lars/projects/hangman-elm/tests/UpdateTest.elm', '/home/lars/projects/hangman-elm/tests/WordsTest.elm']),
 		processes: 4,
-		report: $author$project$Test$Reporter$Reporter$ConsoleReport($author$project$Console$Text$Monochrome),
+		report: $author$project$Test$Reporter$Reporter$JsonReport,
 		runs: 100,
-		seed: 400902293174231
+		seed: 150181712836994
 	},
 	_List_fromArray(
 		[
@@ -9413,7 +9410,7 @@ var $author$project$Test$Generated$Main$main = A2(
 _Platform_export({'Test':{'Generated':{'Main':{'init':$author$project$Test$Generated$Main$main($elm$json$Json$Decode$int)(0)}}}});}(this));
 return this.Elm;
 })({});
-var pipeFilename = "/tmp/elm_test-126572.sock";
+var pipeFilename = "/tmp/elm_test-131538.sock";
 var net = require('net'),
   client = net.createConnection(pipeFilename);
 
