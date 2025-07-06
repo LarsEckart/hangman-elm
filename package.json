@@ -1,0 +1,22 @@
+{
+  "name": "hangman-elm",
+  "version": "1.0.0",
+  "description": "A Hangman game implementation in Elm with multi-language support",
+  "scripts": {
+    "build-wordlists": "node scripts/build-wordlists.js",
+    "dev": "npm run build-wordlists && elm reactor",
+    "build": "npm run build-wordlists && elm make src/Main.elm --output=dist/index.html",
+    "test": "elm-test",
+    "watch": "nodemon --watch src/wordlists --ext csv --exec 'npm run build-wordlists'"
+  },
+  "keywords": ["elm", "game", "hangman", "multi-language"],
+  "author": "Lars",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  }
+}

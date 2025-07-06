@@ -6,6 +6,10 @@ repl-temp-*
 main.html
 index.html
 !test-server.html
+dist/
+
+# Auto-generated Elm modules
+src/Generated/
 
 # elm-test generated files
 tests/elm-stuff/
