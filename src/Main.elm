@@ -39,6 +39,9 @@ update msg model =
         MakeGuess ->
             handleMakeGuess model
         
+        GuessLetter letter ->
+            handleGuessLetter letter model
+        
         PlayAgain ->
             handlePlayAgain model
         
@@ -210,6 +213,51 @@ handleClearError model =
     )
 
 
+-- Handle letter button click
+handleGuessLetter : Char -> Model -> (Model, Cmd Msg)
+handleGuessLetter letter model =
+    if model.gameState /= Playing then
+        -- Don't process guesses if game is already over
+        (model, Cmd.none)
+    else if List.member letter model.guessedLetters then
+        -- Letter already guessed, ignore
+        (model, Cmd.none)
+    else
+        let
+            -- Update guessed letters
+            newGuessedLetters = updateGuessedLetters letter model.guessedLetters
+            
+            -- Calculate remaining guesses
+            newRemainingGuesses = calculateRemainingGuesses model.currentWord newGuessedLetters maxGuesses
+            
+            -- Determine new game state
+            newGameState = 
+                if isGameWon model.currentWord newGuessedLetters then
+                    Won
+                else if isGameLost newRemainingGuesses then
+                    Lost
+                else
+                    Playing
+            
+            -- Determine new screen
+            newScreen = 
+                if newGameState == Won || newGameState == Lost then
+                    GameOver
+                else
+                    Game
+        in
+        ( { model 
+          | guessedLetters = newGuessedLetters
+          , remainingGuesses = newRemainingGuesses
+          , gameState = newGameState
+          , currentScreen = newScreen
+          , userInput = ""
+          , errorMessage = Nothing
+          }
+        , Cmd.none
+        )
+
+
 -- Handle word selection
 handleWordSelected : Difficulty -> Int -> Model -> (Model, Cmd Msg)
 handleWordSelected difficulty index model =
@@ -304,25 +352,8 @@ viewGameScreen model =
         , div (applyStyles wordDisplayStyles)
             [ h1 (applyStyles maskedWordStyles) [ text (formatMaskedWord (getMaskedWord model.currentWord model.guessedLetters)) ]
             ]
-        , div (applyStyles guessedLettersStyles)
-            [ p (applyStyles guessedTitleStyles) [ text (T.translate model.uiLanguage T.GuessedLetters) ]
-            , p (applyStyles guessedListStyles) [ text (formatGuessedLetters model.uiLanguage model.guessedLetters) ]
-            ]
-        , div (applyStyles guessInputStyles)
-            [ input 
-                (applyStyles letterInputStyles ++ 
-                [ type_ "text"
-                , value model.userInput
-                , onInput UpdateInput
-                , placeholder (T.translate model.uiLanguage T.EnterLetterPlaceholder)
-                , disabled (model.gameState /= Playing)
-                ]) []
-            , button 
-                (applyStyles buttonBaseStyles ++
-                [ onClick MakeGuess
-                , disabled (model.gameState /= Playing || String.isEmpty model.userInput)
-                ]) [ text (T.translate model.uiLanguage T.Guess) ]
-            ]
+        , div (applyStyles letterButtonsContainerStyles)
+            (viewLetterButtons model.currentWord model.guessedLetters model.gameState)
         , viewErrorMessage model.uiLanguage model.errorMessage
         ]
 
@@ -688,6 +719,61 @@ clearErrorButtonStyles =
     , ("min-width", "auto")
     ]
 
+-- Letter buttons container styles
+letterButtonsContainerStyles : List (String, String)
+letterButtonsContainerStyles = 
+    [ ("display", "grid")
+    , ("grid-template-columns", "repeat(auto-fit, minmax(40px, 1fr))")
+    , ("gap", "8px")
+    , ("margin", "20px 0")
+    , ("padding", "15px")
+    , ("background", "#f8f9fa")
+    , ("border-radius", "8px")
+    , ("border", "1px solid #e9ecef")
+    , ("max-width", "100%")
+    ]
+
+-- Letter button base styles
+letterButtonStyles : List (String, String)
+letterButtonStyles = 
+    [ ("background", "white")
+    , ("color", "#333")
+    , ("border", "2px solid #ddd")
+    , ("border-radius", "6px")
+    , ("padding", "8px")
+    , ("font-size", "1rem")
+    , ("font-weight", "600")
+    , ("cursor", "pointer")
+    , ("transition", "all 0.2s ease")
+    , ("min-width", "40px")
+    , ("min-height", "40px")
+    , ("display", "flex")
+    , ("align-items", "center")
+    , ("justify-content", "center")
+    ]
+
+-- Letter button correct guess styles
+letterButtonCorrectStyles : List (String, String)
+letterButtonCorrectStyles = 
+    letterButtonStyles ++
+    [ ("background", "#4CAF50")
+    , ("color", "white")
+    , ("border-color", "#4CAF50")
+    , ("cursor", "not-allowed")
+    , ("opacity", "0.8")
+    ]
+
+-- Letter button wrong guess styles
+letterButtonWrongStyles : List (String, String)
+letterButtonWrongStyles = 
+    letterButtonStyles ++
+    [ ("background", "#ffebee")
+    , ("color", "#f44336")
+    , ("border-color", "#f44336")
+    , ("cursor", "not-allowed")
+    , ("opacity", "0.6")
+    ]
+
 -- Helper function to apply styles
 applyStyles : List (String, String) -> List (Html.Attribute msg)
 applyStyles styles =
@@ -755,3 +841,36 @@ viewErrorMessage uiLanguage maybeError =
 validateGuess : String -> List Char -> Result AppError Char
 validateGuess input guessedLetters =
     validateUserInput input guessedLetters
+
+
+-- Generate letter buttons for the alphabet
+viewLetterButtons : String -> List Char -> GameState -> List (Html Msg)
+viewLetterButtons currentWord guessedLetters gameState =
+    let
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            |> String.toList
+        
+        makeButton : Char -> Html Msg
+        makeButton letter =
+            let
+                isGuessed = List.member (Char.toLower letter) guessedLetters
+                isInWord = isLetterInWord (Char.toLower letter) currentWord
+                isDisabled = gameState /= Playing || isGuessed
+                
+                buttonStyle = 
+                    if isGuessed then
+                        if isInWord then
+                            letterButtonCorrectStyles
+                        else
+                            letterButtonWrongStyles
+                    else
+                        letterButtonStyles
+            in
+            button 
+                (applyStyles buttonStyle ++ 
+                [ onClick (GuessLetter (Char.toLower letter))
+                , disabled isDisabled
+                ])
+                [ text (String.fromChar letter) ]
+    in
+    List.map makeButton alphabet
