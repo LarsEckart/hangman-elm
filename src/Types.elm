@@ -200,7 +200,7 @@ validateUserInput input guessedLetters =
         [char] ->
             if not (Char.isAlpha char) then
                 Err (InvalidGuess (NonAlphabetic input))
-            else if List.member (Char.toLower char) guessedLetters then
+            else if List.member (Char.toUpper char) guessedLetters then
                 Err (InvalidGuess (AlreadyGuessed char))
             else
                 Ok char

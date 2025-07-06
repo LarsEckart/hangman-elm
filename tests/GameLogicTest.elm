@@ -30,19 +30,19 @@ suite =
             [ test "adds new letter to empty list" <|
                 \_ ->
                     updateGuessedLetters 'a' []
-                        |> Expect.equal ['a']
+                        |> Expect.equal ['A']
             , test "adds new letter to existing list" <|
                 \_ ->
-                    updateGuessedLetters 'b' ['a']
-                        |> Expect.equal ['a', 'b']
+                    updateGuessedLetters 'b' ['A']
+                        |> Expect.equal ['A', 'B']
             , test "does not add duplicate letter" <|
                 \_ ->
-                    updateGuessedLetters 'a' ['a']
-                        |> Expect.equal ['a']
-            , test "converts to lowercase" <|
+                    updateGuessedLetters 'a' ['A']
+                        |> Expect.equal ['A']
+            , test "converts to uppercase" <|
                 \_ ->
                     updateGuessedLetters 'A' []
-                        |> Expect.equal ['a']
+                        |> Expect.equal ['A']
             ]
         , describe "getMaskedWord"
             [ test "shows all underscores when no letters guessed" <|
@@ -51,33 +51,33 @@ suite =
                         |> Expect.equal "___"
             , test "shows guessed letters in correct positions" <|
                 \_ ->
-                    getMaskedWord "cat" ['a']
-                        |> Expect.equal "_a_"
+                    getMaskedWord "CAT" ['A']
+                        |> Expect.equal "_A_"
             , test "shows all letters when all are guessed" <|
                 \_ ->
-                    getMaskedWord "cat" ['c', 'a', 't']
-                        |> Expect.equal "cat"
+                    getMaskedWord "CAT" ['C', 'A', 'T']
+                        |> Expect.equal "CAT"
             , test "handles empty word" <|
                 \_ ->
                     getMaskedWord "" []
                         |> Expect.equal ""
             , test "is case insensitive" <|
                 \_ ->
-                    getMaskedWord "Cat" ['a']
-                        |> Expect.equal "_a_"
+                    getMaskedWord "CAT" ['A']
+                        |> Expect.equal "_A_"
             ]
         , describe "isGameWon"
             [ test "returns True when all letters are guessed" <|
                 \_ ->
-                    isGameWon "cat" ['c', 'a', 't']
+                    isGameWon "CAT" ['C', 'A', 'T']
                         |> Expect.equal True
             , test "returns False when some letters are missing" <|
                 \_ ->
-                    isGameWon "cat" ['c', 'a']
+                    isGameWon "CAT" ['C', 'A']
                         |> Expect.equal False
             , test "returns False when no letters are guessed" <|
                 \_ ->
-                    isGameWon "cat" []
+                    isGameWon "CAT" []
                         |> Expect.equal False
             , test "returns True for empty word" <|
                 \_ ->
@@ -85,7 +85,7 @@ suite =
                         |> Expect.equal True
             , test "handles duplicate letters in word" <|
                 \_ ->
-                    isGameWon "book" ['b', 'o', 'k']
+                    isGameWon "BOOK" ['B', 'O', 'K']
                         |> Expect.equal True
             ]
         , describe "isGameLost"
@@ -105,15 +105,15 @@ suite =
         , describe "isValidGuess"
             [ test "returns True for single letter" <|
                 \_ ->
-                    isValidGuess 'a' ['b']
+                    isValidGuess 'a' ['B']
                         |> Expect.equal True
             , test "returns False for already guessed letter" <|
                 \_ ->
-                    isValidGuess 'a' ['a']
+                    isValidGuess 'a' ['A']
                         |> Expect.equal False
             , test "is case insensitive for already guessed check" <|
                 \_ ->
-                    isValidGuess 'A' ['a']
+                    isValidGuess 'A' ['A']
                         |> Expect.equal False
             , test "returns False for non-alphabetic character" <|
                 \_ ->
@@ -125,33 +125,33 @@ suite =
                         |> Expect.equal False
             , test "returns True for uppercase letter not already guessed" <|
                 \_ ->
-                    isValidGuess 'B' ['a']
+                    isValidGuess 'B' ['A']
                         |> Expect.equal True
             ]
         , describe "calculateRemainingGuesses"
             [ test "returns same count when correct guess is made" <|
                 \_ ->
-                    calculateRemainingGuesses "cat" ['c'] 6
+                    calculateRemainingGuesses "CAT" ['C'] 6
                         |> Expect.equal 6
             , test "decrements count when wrong guess is made" <|
                 \_ ->
-                    calculateRemainingGuesses "cat" ['z'] 6
+                    calculateRemainingGuesses "CAT" ['Z'] 6
                         |> Expect.equal 5
             , test "handles multiple correct guesses" <|
                 \_ ->
-                    calculateRemainingGuesses "cat" ['c', 'a'] 6
+                    calculateRemainingGuesses "CAT" ['C', 'A'] 6
                         |> Expect.equal 6
             , test "handles multiple wrong guesses" <|
                 \_ ->
-                    calculateRemainingGuesses "cat" ['z', 'x'] 6
+                    calculateRemainingGuesses "CAT" ['Z', 'X'] 6
                         |> Expect.equal 4
             , test "handles mixed correct and wrong guesses" <|
                 \_ ->
-                    calculateRemainingGuesses "cat" ['c', 'z', 'a', 'x'] 6
+                    calculateRemainingGuesses "CAT" ['C', 'Z', 'A', 'X'] 6
                         |> Expect.equal 4
             , test "handles empty guessed letters list" <|
                 \_ ->
-                    calculateRemainingGuesses "cat" [] 6
+                    calculateRemainingGuesses "CAT" [] 6
                         |> Expect.equal 6
             ]
         ]
