@@ -4,39 +4,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Hangman game implementation in Elm following strict Test-Driven Development (TDD) principles. The project is structured around the planned phases outlined in `plan.md` and requirements in `spec.md`.
+This is a **completed** Hangman game implementation in Elm with build-time embedded word lists. The project transformed from HTTP-based word loading to a fully self-contained system with zero network dependencies.
 
-## Architecture
+**🌐 Live Demo**: https://hangman-claudecode.netlify.app/
 
-The project follows a clean architecture with clear separation of concerns:
+## Architecture ✅ **COMPLETED**
 
+The project follows a clean, embedded architecture:
+
+- **`src/Main.elm`**: Complete application with Model-View-Update pattern
+- **`src/Types.elm`**: All type definitions for the 6-screen application flow
 - **`src/GameLogic.elm`**: Core game logic as pure functions (no side effects)
-- **`tests/GameLogicTest.elm`**: Comprehensive test suite for game logic
-- **Planned modules**:
-  - `src/Main.elm`: Application entry point with Model-View-Update pattern
-  - `src/Types.elm`: All type definitions for the application
-  - `src/Words.elm`: Word lists organized by difficulty levels
-  - `tests/UpdateTest.elm`: Tests for the update function and state transitions
+- **`src/Generated/WordLists.elm`**: Auto-generated embedded word lists (gitignored)
+- **`scripts/build-wordlists.js`**: Build-time CSV processor and Elm code generator
+- **Tests**:
+  - `tests/GameLogicTest.elm`: Comprehensive game logic tests (46 tests)
+  - `tests/UpdateTest.elm`: Update function and state transition tests (7 tests)
 
 ## Development Commands
 
 ### Running Tests
 ```bash
-# Run all tests
+# Run all tests (53 tests total)
 elm-test
-
-# Use the DNS-aware script if having connectivity issues
-./test-with-dns.sh
 ```
 
 ### Running the Application
 ```bash
-# Start development server
-elm reactor
+# Development server (builds word lists + starts elm reactor)
+npm run dev
 
-# Compile the application
-elm make src/Main.elm --output=main.html
+# Production build (builds word lists + creates self-contained HTML)
+npm run build
+
+# Build word lists only
+npm run build-wordlists
 ```
+
+### Deployment
+- **Automatic**: Every commit to main branch deploys to https://hangman-claudecode.netlify.app/
+- **Build command**: `npm run build`
+- **Publish directory**: `dist`
 
 ### Development Workflow
 The project strictly follows TDD:
@@ -45,17 +53,21 @@ The project strictly follows TDD:
 3. Refactor while keeping tests green
 4. Never implement features without tests
 
-## DNS Configuration Issue
+## Game Architecture ✅ **COMPLETED**
 
-Elm 0.19.1 has known DNS resolution issues with systemd-resolved on Arch Linux. The `/etc/resolv.conf` has been configured to use `8.8.8.8` to resolve package registry connectivity issues. The `test-with-dns.sh` script provides guidance for this configuration.
-
-## Game Architecture
-
-The game follows a multi-screen architecture:
+The game follows a 6-screen architecture with multi-language support:
 - **Start Screen**: Game title and start button
+- **Language Selection**: English, German, Estonian
+- **Category Selection**: Animals, Food, Sport
 - **Difficulty Selection**: Easy (3-5 letters), Medium (6-8 letters), Hard (9+ letters)
 - **Game Screen**: Main gameplay with masked word, guessed letters, and input
 - **Game Over Screen**: Win/loss state with play again option
+
+### Word List System
+- **109 words** embedded from 12 CSV files at build time
+- **Zero HTTP requests** - fully self-contained
+- **Instant word loading** with Random module selection
+- **3-dimensional structure**: Language → Category → Difficulty
 
 ## Core Game Logic
 
@@ -66,32 +78,37 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 - `isGameWon`/`isGameLost`: Win/loss condition checks
 - `isValidGuess`: Input validation for single letters
 
-## Randomization System
+## Build System ✅ **COMPLETED**
 
-The game uses Elm's Random module for proper word selection:
-- `Browser.element` architecture supports commands for random generation
-- `WordSelected` message handles random word selection results
-- Random index generation ensures different words each game
-- Eliminates predictable behavior from fixed seed values
+**Node.js Build Script** (`scripts/build-wordlists.js`):
+- Discovers CSV files in `src/wordlists/` (12 files found)
+- Validates word lengths against difficulty requirements
+- Generates optimized 3D Dict structure in `src/Generated/WordLists.elm`
+- Handles missing files gracefully with warnings
+- Creates type-safe Elm code with proper imports
 
-## Testing Strategy
+**NPM Scripts**:
+- `npm run build-wordlists`: Generate embedded word lists
+- `npm run dev`: Build + start elm reactor
+- `npm run build`: Build + create production HTML
+- `npm run test`: Run elm-test suite
 
-The test suite in `GameLogicTest.elm` covers:
-- All core game logic functions
-- Edge cases (empty strings, case sensitivity, duplicates)
-- Input validation scenarios
-- Win/loss condition verification
+## Testing Strategy ✅ **COMPLETED**
 
-Each function has comprehensive test coverage with descriptive test names following the pattern: "returns X when Y" or "handles Z case".
+**53 total tests passing**:
+- **GameLogicTest.elm**: All core game logic functions with edge cases
+- **UpdateTest.elm**: Message handling and state transitions
+- Comprehensive coverage of input validation, win/loss conditions
+- Tests updated for embedded word list behavior
 
-## Implementation Status
+## Implementation Status ✅ **ALL PHASES COMPLETED**
 
-- ✅ **Phase 1**: Project setup and core game logic complete
-- ⏳ **Phase 2**: Type definitions (next phase)
-- ⏳ **Phase 3**: Word management system
-- ⏳ **Phase 4**: Update function and state management
-- ⏳ **Phase 5**: View implementation
-- ⏳ **Phase 6**: Integration and testing
+- ✅ **Phase 0**: Prerequisites and test fixes
+- ✅ **Phase 1**: Build script development and CSV processing
+- ✅ **Phase 2**: Feature flag implementation and parallel systems
+- ✅ **Phase 3**: Full migration to embedded system and cleanup
+
+See `plan.md` for detailed implementation history.
 
 ## Key Design Principles
 

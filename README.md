@@ -1,18 +1,20 @@
 # Hangman Game - Elm Implementation
 
-A classic Hangman word-guessing game built with Elm using Test-Driven Development (TDD) principles. The game features multiple difficulty levels, comprehensive input validation, and a clean, responsive user interface.
+A classic Hangman word-guessing game built with Elm featuring **build-time embedded word lists** for zero-dependency, self-contained gameplay. Built using Test-Driven Development (TDD) principles with 53 comprehensive tests.
+
+**🌐 Play Online**: https://hangman-claudecode.netlify.app/
 
 ## Features
 
-- **Multiple Languages**: Play in English, German, or Estonian
-- **Categories**: Choose from Animals, Food & Drinks, or Sport
-- **Multiple Difficulty Levels**: Choose from Easy (3-5 letters), Medium (6-8 letters), or Hard (9+ letters)
-- **Dynamic Word Loading**: Words are loaded from CSV files based on your selections
-- **Comprehensive Word Lists**: Over 20 carefully selected words for each combination
-- **Input Validation**: Prevents invalid guesses and duplicate letters
-- **Game State Management**: Tracks game progress, remaining guesses, and win/loss conditions
-- **Clean UI**: Intuitive interface with clear visual feedback
-- **Responsive Design**: Works well on different screen sizes
+- **🌍 Multiple Languages**: Play in English, German, or Estonian
+- **📂 Categories**: Choose from Animals, Food, or Sport
+- **🎯 Multiple Difficulty Levels**: Easy (3-5 letters), Medium (6-8 letters), Hard (9+ letters)
+- **⚡ Zero Network Dependencies**: 109 words embedded at build time - no HTTP requests
+- **🚀 Instant Loading**: Self-contained HTML file with embedded word lists
+- **✅ Input Validation**: Prevents invalid guesses and duplicate letters
+- **🎮 Game State Management**: Tracks progress, remaining guesses, and win/loss conditions
+- **🎨 Clean UI**: Intuitive 6-screen interface with clear visual feedback
+- **📱 Self-Contained**: Works offline, no server required
 
 ## Game Rules
 
@@ -25,16 +27,16 @@ A classic Hangman word-guessing game built with Elm using Test-Driven Developmen
 7. **Loss Condition**: Use all 6 attempts without guessing the complete word
 8. **Play Again**: After each game, you can play again or return to the start screen
 
-## How to Run the Game
+## Development
 
 ### Prerequisites
 
 - [Elm](https://guide.elm-lang.org/install/elm.html) (version 0.19.1)
-- [Node.js](https://nodejs.org/) (for elm-test)
+- [Node.js](https://nodejs.org/) (for build system and testing)
 
 ### Installation
 
-1. Clone or download this repository
+1. Clone this repository
 2. Navigate to the project directory:
    ```bash
    cd hangman-elm
@@ -42,147 +44,149 @@ A classic Hangman word-guessing game built with Elm using Test-Driven Developmen
 
 ### Running the Application
 
-#### Option 1: Using Elm Reactor (Recommended)
+#### Development Server (Recommended)
 ```bash
-./serve.sh
+npm run dev
 ```
-Or manually:
-```bash
-elm reactor
-```
-Then open your browser and navigate to `http://localhost:8000/main.html`
+This builds the embedded word lists and starts elm reactor at http://localhost:8000
 
-#### Option 2: Compile to HTML
+#### Production Build
 ```bash
-elm make src/Main.elm --output=main.html
+npm run build
 ```
-Then open `main.html` in your web browser
+Creates `dist/index.html` with embedded word lists - fully self-contained!
 
-**Note**: Word lists are loaded from CSV files in `src/wordlists/`. If serving the compiled HTML directly, ensure the word list files are accessible at the correct path.
+#### Build Word Lists Only
+```bash
+npm run build-wordlists
+```
+Generates `src/Generated/WordLists.elm` from CSV files
 
 ### Running Tests
 
-Install elm-test (if not already installed):
+Run all 53 tests:
 ```bash
-npm install -g elm-test
+npm test
 ```
-
-Run all tests:
+Or directly:
 ```bash
 elm-test
 ```
-
-For DNS issues on some systems, you can use the provided script:
-```bash
-./test-with-dns.sh
 ```
+
+## Deployment
+
+**Automatic Deployment**: Every commit to the main branch automatically deploys to:
+**🌐 https://hangman-claudecode.netlify.app/**
+
+**Netlify Configuration**:
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Builds embedded word lists and creates self-contained HTML
 
 ## Project Structure
 
 ```
 hangman-elm/
 ├── src/
-│   ├── Main.elm          # Entry point, UI, and update logic
-│   ├── Types.elm         # Type definitions and model
-│   ├── GameLogic.elm     # Pure game logic functions
-│   ├── Words.elm         # Word lists by difficulty (fallback)
-│   ├── WordLoader.elm    # CSV file loading functionality
-│   └── wordlists/        # CSV word list files
+│   ├── Main.elm              # Complete 6-screen Elm app
+│   ├── Types.elm             # Type definitions and model
+│   ├── GameLogic.elm         # Pure game logic functions
+│   ├── Generated/            # Auto-generated (gitignored)
+│   │   └── WordLists.elm     # Embedded 3D word structure
+│   └── wordlists/            # Source CSV files (12 files)
 │       ├── english-animals-easy.csv
 │       ├── german-animals-easy.csv
 │       ├── estonian-animals-easy.csv
-│       └── ... (more combinations)
+│       └── ... (9 more combinations)
+├── scripts/
+│   └── build-wordlists.js    # CSV → Elm code generator
 ├── tests/
-│   ├── GameLogicTest.elm # Tests for core game logic
-│   ├── UpdateTest.elm    # Tests for update function
-│   └── WordsTest.elm     # Tests for word management
-├── elm.json              # Project configuration
-├── serve.sh              # Helper script to run the game
-└── README.md             # This file
+│   ├── GameLogicTest.elm     # Core game logic tests (46 tests)
+│   └── UpdateTest.elm        # Update function tests (7 tests)
+├── dist/                     # Build output
+│   └── index.html           # Self-contained game
+├── package.json              # Build scripts and dependencies
+├── elm.json                  # Elm project configuration
+└── README.md                 # This file
 ```
 
 ## Architecture
 
-The game follows the Elm Architecture pattern with clear separation of concerns:
+**Build-Time Embedded System**:
+- **Build Script**: `scripts/build-wordlists.js` transforms CSV files → Elm code
+- **Generated Module**: `src/Generated/WordLists.elm` with 3D Dict structure
+- **Zero Dependencies**: No HTTP requests, fully self-contained
+- **Instant Loading**: Words available immediately via embedded lookup
 
+**Elm Architecture Pattern**:
 - **Model**: Immutable state management in `Types.elm`
 - **Update**: Pure state transitions in `Main.elm`
-- **View**: Declarative UI rendering in `Main.elm`
-- **Game Logic**: Pure functions in `GameLogic.elm` for core game mechanics
+- **View**: Declarative 6-screen UI in `Main.elm`
+- **Game Logic**: Pure functions in `GameLogic.elm`
 
 ## Core Game Logic
 
-All game logic is implemented as pure functions for better testability:
-
-- `isLetterInWord`: Checks if a letter exists in the target word (case-insensitive)
-- `updateGuessedLetters`: Adds new letters to the guessed letters list
-- `getMaskedWord`: Creates the masked word display (e.g., "_ A _")
-- `isGameWon`: Determines if all letters have been guessed
-- `isGameLost`: Determines if the player has run out of guesses
-- `calculateRemainingGuesses`: Calculates remaining attempts based on incorrect guesses
+All game logic implemented as pure functions:
+- `isLetterInWord`: Case-insensitive letter detection
+- `updateGuessedLetters`: Duplicate-safe letter management
+- `getMaskedWord`: Masked display generation
+- `isGameWon`/`isGameLost`: Win/loss condition checks
+- `isValidGuess`: Input validation for single letters
 
 ## Testing
 
-The project uses comprehensive Test-Driven Development with 67 test cases covering:
+**53 comprehensive tests** using Test-Driven Development:
+- **GameLogicTest.elm**: Core game mechanics and edge cases (46 tests)
+- **UpdateTest.elm**: State transitions and message handling (7 tests)
 
-- **Core Logic Tests**: All game mechanics and edge cases
-- **Update Function Tests**: State transitions and user interactions
-- **Word Management Tests**: Difficulty-based word selection and validation
-- **Integration Tests**: Complete game flow scenarios
+**Coverage includes**:
+- Input validation (empty, non-letters, duplicates)
+- Case sensitivity and special characters
+- Win/loss detection and state transitions
+- Embedded word list behavior
 
-### Test Coverage
+## Build-Time Word List System
 
-- Input validation (empty input, non-letters, duplicate guesses)
-- Case sensitivity handling
-- Win/loss condition detection
-- State transitions between game screens
-- Word length validation for each difficulty
+**109 words embedded** from 12 CSV files at build time:
 
-## Word Lists
-
-Words are organized in CSV files by language, category, and difficulty:
-
-### File Format
-- **Naming Convention**: `{language}-{category}-{difficulty}.csv`
-- **Example**: `english-animals-easy.csv`, `german-food-medium.csv`
-- **Structure**: One word per line in CSV files
+### CSV File Organization
+- **Format**: `{language}-{category}-{difficulty}.csv`
+- **Structure**: One word per line
+- **Example**: `english-animals-easy.csv`, `german-food-easy.csv`
 
 ### Available Combinations
-- **Languages**: English, German, Estonian
-- **Categories**: Animals, Food & Drinks, Sport
-- **Difficulties**: 
-  - Easy: 3-5 letter words
-  - Medium: 6-8 letter words
-  - Hard: 9+ letter words
+- **Languages**: English, German, Estonian (3)
+- **Categories**: Animals, Food, Sport (3)  
+- **Difficulties**: Easy (3-5), Medium (6-8), Hard (9+) (3)
+- **Total**: 27 possible combinations (12 currently available)
 
-### Adding New Word Lists
-To add new word lists, create a CSV file following the naming convention and place it in `src/wordlists/`. The game will automatically load words from the appropriate file based on user selections.
+### Build Process
+1. `scripts/build-wordlists.js` scans `src/wordlists/*.csv`
+2. Validates word lengths against difficulty requirements
+3. Generates `src/Generated/WordLists.elm` with 3D Dict structure
+4. Handles missing files gracefully with warnings
+5. Creates type-safe, optimized lookup functions
 
-## Development
-
-This project was built using Test-Driven Development principles:
-
-1. **Write Tests First**: All functionality was tested before implementation
-2. **Minimal Implementation**: Code was written to make tests pass
-3. **Refactor Safely**: Clean code while maintaining test coverage
-4. **Pure Functions**: Game logic separated from UI for better testability
+### Adding New Words
+1. Add CSV files to `src/wordlists/` following naming convention
+2. Run `npm run build-wordlists` to regenerate embedded lists
+3. Words automatically available in next build
 
 ## Browser Compatibility
 
-The game works in all modern browsers that support Elm applications:
-- Chrome/Chromium
-- Firefox
-- Safari
-- Edge
-
-## DNS Configuration Note
-
-If you experience issues with Elm package installation on some Linux systems, the project includes a `test-with-dns.sh` script that provides guidance for DNS configuration.
+Works in all modern browsers - no server required:
+- Chrome/Chromium, Firefox, Safari, Edge
+- Self-contained HTML with embedded assets
+- No external dependencies or network requests
 
 ## License
 
-This project is open source and available under the MIT License.
+MIT License - Open source and contributions welcome!
 
 ## Contributing
 
-Contributions are welcome! Please ensure all new features include comprehensive tests following the existing TDD approach.
+1. Follow TDD principles - write tests first
+2. Run `npm test` to ensure all 53 tests pass
+3. Add new CSV word lists in `src/wordlists/`
+4. Maintain pure function architecture
