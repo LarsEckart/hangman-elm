@@ -3,8 +3,9 @@
 # Build script for Hangman Elm project
 # This script performs the complete build process including:
 # 1. Building word lists from CSV files
-# 2. Compiling Elm to HTML
-# 3. Adding viewport meta tag to the generated HTML
+# 2. Generating Service Worker with automatic versioning
+# 3. Compiling Elm to HTML
+# 4. Adding viewport meta tag and Service Worker registration to HTML
 
 set -e  # Exit on error
 
@@ -22,9 +23,21 @@ if [ ! -f "src/Generated/WordLists.elm" ]; then
 fi
 
 echo ""
+echo "⚙️ Generating Service Worker with automatic versioning..."
+
+# Step 2: Build Service Worker
+npm run build-sw
+
+# Check if Service Worker was generated successfully
+if [ ! -f "dist/sw.js" ]; then
+    echo "❌ Error: Service Worker was not generated!"
+    exit 1
+fi
+
+echo ""
 echo "🔨 Compiling Elm application..."
 
-# Step 2: Compile Elm to HTML
+# Step 3: Compile Elm to HTML
 elm make src/Main.elm --output=dist/index.html
 
 # Check if Elm compilation was successful
@@ -34,14 +47,15 @@ if [ ! -f "dist/index.html" ]; then
 fi
 
 echo ""
-echo "🎨 Adding viewport meta tag..."
+echo "🎨 Adding viewport meta tag and Service Worker registration..."
 
-# Step 3: Add viewport meta tag
+# Step 4: Add viewport meta tag and Service Worker registration
 node scripts/add-viewport.js
 
 echo ""
 echo "✅ Build completed successfully!"
-echo "📦 Output: dist/index.html"
+echo "📦 Output: dist/index.html + dist/sw.js"
+echo "🔧 Features: Offline support via Service Worker"
 echo ""
 echo "🌐 To deploy: Push to main branch for automatic Netlify deployment"
 echo "🎮 Live demo: https://hangman-claudecode.netlify.app/"
