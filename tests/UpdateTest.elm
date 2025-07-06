@@ -296,7 +296,7 @@ suite =
                         updatedModel
             ]
         , describe "PlayAgain message"
-            [ test "resets game state and transitions to DifficultySelection" <|
+            [ test "falls back to BackToStart when selections are missing" <|
                 \_ ->
                     let
                         gameOverModel = 
@@ -311,7 +311,7 @@ suite =
                         updatedModel = updateModel PlayAgain gameOverModel
                     in
                     Expect.all
-                        [ \m -> Expect.equal m.currentScreen LanguageSelection
+                        [ \m -> Expect.equal m.currentScreen Start
                         , \m -> Expect.equal m.currentWord ""
                         , \m -> Expect.equal m.guessedLetters []
                         , \m -> Expect.equal m.remainingGuesses maxGuesses
@@ -321,6 +321,35 @@ suite =
                         , \m -> Expect.equal m.selectedDifficulty Nothing
                         , \m -> Expect.equal m.selectedLanguage Nothing
                         , \m -> Expect.equal m.selectedCategory Nothing
+                        ]
+                        updatedModel
+            
+            , test "preserves selections when all selections are present" <|
+                \_ ->
+                    let
+                        gameOverModel = 
+                            { initialModel 
+                            | currentScreen = GameOver
+                            , currentWord = "cat"
+                            , guessedLetters = ['c', 'a', 't']
+                            , remainingGuesses = 3
+                            , gameState = Won
+                            , selectedLanguage = Just English
+                            , selectedCategory = Just Animals
+                            , selectedDifficulty = Just Easy
+                            }
+                        updatedModel = updateModel PlayAgain gameOverModel
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentWord ""
+                        , \m -> Expect.equal m.guessedLetters []
+                        , \m -> Expect.equal m.remainingGuesses maxGuesses
+                        , \m -> Expect.equal m.gameState Playing
+                        , \m -> Expect.equal m.userInput ""
+                        , \m -> Expect.equal m.errorMessage Nothing
+                        , \m -> Expect.equal m.selectedDifficulty (Just Easy)
+                        , \m -> Expect.equal m.selectedLanguage (Just English)
+                        , \m -> Expect.equal m.selectedCategory (Just Animals)
                         ]
                         updatedModel
             ]

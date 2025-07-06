@@ -188,15 +188,27 @@ handleMakeGuess model =
 -- Handle playing again
 handlePlayAgain : Model -> (Model, Cmd Msg)
 handlePlayAgain model =
-    ( resetGame model
-    |> (\resetModel -> { resetModel 
-        | currentScreen = LanguageSelection
-        , selectedLanguage = Nothing
-        , selectedCategory = Nothing
-        , selectedDifficulty = Nothing
-        })
-    , Cmd.none
-    )
+    case (model.selectedLanguage, model.selectedCategory, model.selectedDifficulty) of
+        (Just language, Just category, Just difficulty) ->
+            let
+                availableWords = EmbeddedWordLists.getWordList language category difficulty
+                resetModel = resetGame model
+            in
+            if List.isEmpty availableWords then
+                -- This shouldn't happen since we already played a game, but handle it gracefully
+                ( { resetModel | errorMessage = Just (NoWordsAvailable language category difficulty) }
+                , Cmd.none
+                )
+            else
+                ( { resetModel 
+                  | wordList = availableWords
+                  , errorMessage = Nothing
+                  }
+                , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
+                )
+        _ ->
+            -- If somehow selections are missing, fall back to starting over
+            handleBackToStart model
 
 
 -- Handle back to start
