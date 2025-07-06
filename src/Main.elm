@@ -4,12 +4,9 @@ import Browser
 import Html exposing (Html, div, h1, h2, p, button, input, text, span)
 import Html.Attributes exposing (class, type_, value, placeholder, disabled)
 import Html.Events exposing (onClick, onInput)
-import Http
 import Random
 import Types exposing (..)
 import GameLogic exposing (..)
-import Words exposing (getRandomWord, getWordsByDifficulty)
-import WordLoader exposing (loadWordList, parseWordList)
 import Generated.WordLists as EmbeddedWordLists
 
 
@@ -50,30 +47,20 @@ update msg model =
         SelectDifficulty difficulty ->
             case (model.selectedLanguage, model.selectedCategory) of
                 (Just language, Just category) ->
-                    if model.useEmbeddedWordLists then
-                        -- Use embedded word lists - immediate word selection
-                        let
-                            availableWords = EmbeddedWordLists.getWordList language category difficulty
-                        in
-                        if List.isEmpty availableWords then
-                            ( { model | errorMessage = Just "No words available for this combination" }
-                            , Cmd.none
-                            )
-                        else
-                            ( { model 
-                              | selectedDifficulty = Just difficulty
-                              , wordList = availableWords
-                              , errorMessage = Nothing
-                              }
-                            , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
-                            )
+                    let
+                        availableWords = EmbeddedWordLists.getWordList language category difficulty
+                    in
+                    if List.isEmpty availableWords then
+                        ( { model | errorMessage = Just "No words available for this combination" }
+                        , Cmd.none
+                        )
                     else
-                        -- Use HTTP loading (existing behavior)
                         ( { model 
                           | selectedDifficulty = Just difficulty
-                          , errorMessage = Just "Loading word list..."
+                          , wordList = availableWords
+                          , errorMessage = Nothing
                           }
-                        , loadWordList language category difficulty
+                        , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
                         )
                 _ ->
                     -- This shouldn't happen in normal flow
@@ -163,28 +150,13 @@ update msg model =
             , Cmd.none
             )
         
-        ToggleWordListSource ->
-            ( { model 
-              | useEmbeddedWordLists = not model.useEmbeddedWordLists
-              , errorMessage = 
-                  if model.useEmbeddedWordLists then
-                      Just "Switched to HTTP word loading"
-                  else
-                      Just "Switched to embedded word loading"
-              }
-            , Cmd.none
-            )
-        
         WordSelected difficulty index ->
             let
                 selectedWord = 
-                    if List.isEmpty model.wordList then
-                        getRandomWord difficulty index  -- Fallback to old method
-                    else
-                        model.wordList
-                            |> List.drop index
-                            |> List.head
-                            |> Maybe.withDefault ""
+                    model.wordList
+                        |> List.drop index
+                        |> List.head
+                        |> Maybe.withDefault ""
             in
             ( { model 
             | currentScreen = Game
@@ -193,65 +165,17 @@ update msg model =
             , Cmd.none
             )
         
-        LoadWordList result ->
-            case result of
-                Ok csvContent ->
-                    let
-                        words = parseWordList csvContent
-                        wordCount = List.length words
-                    in
-                    if wordCount > 0 then
-                        ( { model 
-                        | wordList = words
-                        , guessedLetters = []
-                        , remainingGuesses = maxGuesses
-                        , gameState = Playing
-                        , userInput = ""
-                        , errorMessage = Nothing
-                        }
-                        , Random.generate (WordSelected (Maybe.withDefault Easy model.selectedDifficulty)) (Random.int 0 (wordCount - 1))
-                        )
-                    else
-                        ( { model | errorMessage = Just "No words found in the selected category" }
-                        , Cmd.none
-                        )
-                
-                Err error ->
-                    let
-                        errorMsg = case error of
-                            Http.BadUrl url -> "Bad URL: " ++ url
-                            Http.Timeout -> "Request timed out"
-                            Http.NetworkError -> "Network error - check if elm reactor is running"
-                            Http.BadStatus status -> "Bad status: " ++ String.fromInt status
-                            Http.BadBody bodyError -> "Bad response: " ++ bodyError
-                    in
-                    ( { model | errorMessage = Just ("Failed to load word list: " ++ errorMsg) }
-                    , Cmd.none
-                    )
 
 
 -- VIEW FUNCTIONS
 
 -- Start screen view
-viewStartScreen : Model -> Html Msg
-viewStartScreen model =
+viewStartScreen : Html Msg
+viewStartScreen =
     div [ class "screen start-screen" ]
         [ h1 [ class "game-title" ] [ text "🎯 HANGMAN GAME" ]
         , p [ class "game-description" ] [ text "Guess the word letter by letter!" ]
         , button [ class "start-button", onClick StartGame ] [ text "Start Game" ]
-        , div [ class "development-controls" ]
-            [ p [ class "dev-label" ] [ text "Development Mode:" ]
-            , button 
-                [ class "toggle-button"
-                , onClick ToggleWordListSource
-                ] 
-                [ text 
-                    (if model.useEmbeddedWordLists then 
-                        "Using: Embedded Words" 
-                    else 
-                        "Using: HTTP Loading")
-                ]
-            ]
         ]
 
 
@@ -377,7 +301,7 @@ view model =
     div [ class "app" ]
         [ case model.currentScreen of
             Start ->
-                viewStartScreen model
+                viewStartScreen
             
             LanguageSelection ->
                 viewLanguageSelection

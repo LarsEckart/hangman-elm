@@ -1,7 +1,5 @@
 module Types exposing (..)
 
-import Http
-
 -- Type aliases for clarity and readability
 type alias Word = String
 type alias GuessedLetters = List Char
@@ -60,7 +58,6 @@ type alias Model =
     , userInput : UserInput
     , errorMessage : Maybe String
     , wordList : List String
-    , useEmbeddedWordLists : Bool
     }
 
 
@@ -76,8 +73,6 @@ type Msg
     | BackToStart
     | ClearError
     | WordSelected Difficulty Int
-    | LoadWordList (Result Http.Error String)
-    | ToggleWordListSource
 
 
 -- Constants for game configuration
@@ -123,7 +118,6 @@ initialModel =
     , userInput = ""
     , errorMessage = Nothing
     , wordList = []
-    , useEmbeddedWordLists = False  -- Start with HTTP loading for safe migration
     }
 
 

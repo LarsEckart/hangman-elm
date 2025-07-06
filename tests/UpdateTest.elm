@@ -54,7 +54,7 @@ suite =
                     Expect.equal updatedModel.errorMessage Nothing
             ]
         , describe "SelectDifficulty message"
-            [ test "initiates word loading when language and category are selected" <|
+            [ test "selects difficulty and loads embedded words when language and category are selected" <|
                 \_ ->
                     let
                         modelWithSelections = 
@@ -67,7 +67,8 @@ suite =
                     in
                     Expect.all
                         [ \m -> Expect.equal m.selectedDifficulty (Just Easy)
-                        , \m -> Expect.equal m.errorMessage (Just "Loading word list...")
+                        , \m -> Expect.equal m.errorMessage Nothing
+                        , \m -> Expect.notEqual m.wordList []
                         ]
                         updatedModel
             
