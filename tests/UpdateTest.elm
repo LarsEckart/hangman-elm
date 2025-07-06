@@ -6,6 +6,18 @@ import Types exposing (..)
 import Main exposing (update, init)
 
 
+-- Helper function to get the initial model from init
+initialModel : Model
+initialModel =
+    Tuple.first (init ())
+
+
+-- Helper function to extract model from update result
+updateModel : Msg -> Model -> Model
+updateModel msg model =
+    Tuple.first (update msg model)
+
+
 -- Test suite for update function and model initialization
 suite : Test
 suite =
@@ -13,9 +25,6 @@ suite =
         [ describe "Model initialization"
             [ test "init returns correct initial model" <|
                 \_ ->
-                    let
-                        model = init
-                    in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Start
                         , \m -> Expect.equal m.selectedDifficulty Nothing
@@ -26,109 +35,79 @@ suite =
                         , \m -> Expect.equal m.userInput ""
                         , \m -> Expect.equal m.errorMessage Nothing
                         ]
-                        model
+                        initialModel
             ]
         , describe "StartGame message"
-            [ test "transitions from Start to DifficultySelection screen" <|
+            [ test "transitions from Start to LanguageSelection screen" <|
                 \_ ->
                     let
-                        initialModel = init
-                        updatedModel = update StartGame initialModel
+                        updatedModel = updateModel StartGame initialModel
                     in
-                    Expect.equal updatedModel.currentScreen DifficultySelection
+                    Expect.equal updatedModel.currentScreen LanguageSelection
             
             , test "clears error message when starting game" <|
                 \_ ->
                     let
-                        modelWithError = { init | errorMessage = Just "Previous error" }
-                        updatedModel = update StartGame modelWithError
+                        modelWithError = { initialModel | errorMessage = Just "Previous error" }
+                        updatedModel = updateModel StartGame modelWithError
                     in
                     Expect.equal updatedModel.errorMessage Nothing
             ]
         , describe "SelectDifficulty message"
-            [ test "transitions from DifficultySelection to Game screen with Easy difficulty" <|
+            [ test "initiates word loading when language and category are selected" <|
                 \_ ->
                     let
-                        initialModel = { init | currentScreen = DifficultySelection }
-                        updatedModel = update (SelectDifficulty Easy) initialModel
+                        modelWithSelections = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedLanguage = Just English
+                            , selectedCategory = Just Animals
+                            }
+                        updatedModel = updateModel (SelectDifficulty Easy) modelWithSelections
                     in
                     Expect.all
-                        [ \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.selectedDifficulty (Just Easy)
-                        , \m -> Expect.notEqual m.currentWord ""
-                        , \m -> Expect.equal m.guessedLetters []
-                        , \m -> Expect.equal m.remainingGuesses maxGuesses
-                        , \m -> Expect.equal m.gameState Playing
+                        [ \m -> Expect.equal m.selectedDifficulty (Just Easy)
+                        , \m -> Expect.equal m.errorMessage (Just "Loading word list...")
                         ]
                         updatedModel
             
-            , test "transitions from DifficultySelection to Game screen with Medium difficulty" <|
+            , test "shows error when language not selected" <|
                 \_ ->
                     let
-                        initialModel = { init | currentScreen = DifficultySelection }
-                        updatedModel = update (SelectDifficulty Medium) initialModel
+                        modelWithoutLanguage = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedCategory = Just Animals
+                            }
+                        updatedModel = updateModel (SelectDifficulty Easy) modelWithoutLanguage
                     in
-                    Expect.all
-                        [ \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.selectedDifficulty (Just Medium)
-                        , \m -> Expect.notEqual m.currentWord ""
-                        ]
-                        updatedModel
+                    Expect.equal updatedModel.errorMessage (Just "Please select language and category first")
             
-            , test "transitions from DifficultySelection to Game screen with Hard difficulty" <|
+            , test "shows error when category not selected" <|
                 \_ ->
                     let
-                        initialModel = { init | currentScreen = DifficultySelection }
-                        updatedModel = update (SelectDifficulty Hard) initialModel
+                        modelWithoutCategory = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedLanguage = Just English
+                            }
+                        updatedModel = updateModel (SelectDifficulty Easy) modelWithoutCategory
                     in
-                    Expect.all
-                        [ \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.selectedDifficulty (Just Hard)
-                        , \m -> Expect.notEqual m.currentWord ""
-                        ]
-                        updatedModel
-            
-            , test "selected word length matches Easy difficulty requirements" <|
-                \_ ->
-                    let
-                        initialModel = { init | currentScreen = DifficultySelection }
-                        updatedModel = update (SelectDifficulty Easy) initialModel
-                        wordLength = String.length updatedModel.currentWord
-                    in
-                    Expect.equal True (wordLength >= 3 && wordLength <= 5)
-            
-            , test "selected word length matches Medium difficulty requirements" <|
-                \_ ->
-                    let
-                        initialModel = { init | currentScreen = DifficultySelection }
-                        updatedModel = update (SelectDifficulty Medium) initialModel
-                        wordLength = String.length updatedModel.currentWord
-                    in
-                    Expect.equal True (wordLength >= 6 && wordLength <= 8)
-            
-            , test "selected word length matches Hard difficulty requirements" <|
-                \_ ->
-                    let
-                        initialModel = { init | currentScreen = DifficultySelection }
-                        updatedModel = update (SelectDifficulty Hard) initialModel
-                        wordLength = String.length updatedModel.currentWord
-                    in
-                    Expect.equal True (wordLength >= 9)
+                    Expect.equal updatedModel.errorMessage (Just "Please select language and category first")
             ]
         , describe "UpdateInput message"
             [ test "updates user input field" <|
                 \_ ->
                     let
-                        initialModel = init
-                        updatedModel = update (UpdateInput "a") initialModel
+                        updatedModel = updateModel (UpdateInput "a") initialModel
                     in
                     Expect.equal updatedModel.userInput "a"
             
             , test "clears error message when updating input" <|
                 \_ ->
                     let
-                        modelWithError = { init | errorMessage = Just "Previous error" }
-                        updatedModel = update (UpdateInput "b") modelWithError
+                        modelWithError = { initialModel | errorMessage = Just "Previous error" }
+                        updatedModel = updateModel (UpdateInput "b") modelWithError
                     in
                     Expect.equal updatedModel.errorMessage Nothing
             ]
@@ -137,13 +116,13 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = "c"
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.guessedLetters ['c']
@@ -157,13 +136,13 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = "x"
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.guessedLetters ['x']
@@ -177,13 +156,13 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = ""
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.guessedLetters []
@@ -197,13 +176,13 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = "abc"
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.guessedLetters []
@@ -217,14 +196,14 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = "c"
                             , guessedLetters = ['c', 'a']
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.guessedLetters ['c', 'a']
@@ -238,13 +217,13 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = "1"
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.guessedLetters []
@@ -258,14 +237,14 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = "t"
                             , guessedLetters = ['c', 'a']
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen GameOver
@@ -278,7 +257,7 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , userInput = "z"
@@ -286,7 +265,7 @@ suite =
                             , remainingGuesses = 1
                             , gameState = Playing
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen GameOver
@@ -299,13 +278,13 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = GameOver
                             , currentWord = "cat"
                             , userInput = "c"
                             , gameState = Won
                             }
-                        updatedModel = update MakeGuess gameModel
+                        updatedModel = updateModel MakeGuess gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.guessedLetters []
@@ -319,7 +298,7 @@ suite =
                 \_ ->
                     let
                         gameOverModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = GameOver
                             , currentWord = "cat"
                             , guessedLetters = ['c', 'a', 't']
@@ -327,10 +306,10 @@ suite =
                             , gameState = Won
                             , selectedDifficulty = Just Easy
                             }
-                        updatedModel = update PlayAgain gameOverModel
+                        updatedModel = updateModel PlayAgain gameOverModel
                     in
                     Expect.all
-                        [ \m -> Expect.equal m.currentScreen DifficultySelection
+                        [ \m -> Expect.equal m.currentScreen LanguageSelection
                         , \m -> Expect.equal m.currentWord ""
                         , \m -> Expect.equal m.guessedLetters []
                         , \m -> Expect.equal m.remainingGuesses maxGuesses
@@ -338,6 +317,8 @@ suite =
                         , \m -> Expect.equal m.userInput ""
                         , \m -> Expect.equal m.errorMessage Nothing
                         , \m -> Expect.equal m.selectedDifficulty Nothing
+                        , \m -> Expect.equal m.selectedLanguage Nothing
+                        , \m -> Expect.equal m.selectedCategory Nothing
                         ]
                         updatedModel
             ]
@@ -346,7 +327,7 @@ suite =
                 \_ ->
                     let
                         gameModel = 
-                            { init 
+                            { initialModel 
                             | currentScreen = Game
                             , currentWord = "cat"
                             , guessedLetters = ['c', 'a']
@@ -354,7 +335,7 @@ suite =
                             , selectedDifficulty = Just Medium
                             , userInput = "test"
                             }
-                        updatedModel = update BackToStart gameModel
+                        updatedModel = updateModel BackToStart gameModel
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Start
@@ -373,12 +354,12 @@ suite =
                 \_ ->
                     let
                         modelWithError = 
-                            { init 
+                            { initialModel 
                             | errorMessage = Just "Test error"
                             , currentScreen = Game
                             , currentWord = "cat"
                             }
-                        updatedModel = update ClearError modelWithError
+                        updatedModel = updateModel ClearError modelWithError
                     in
                     Expect.all
                         [ \m -> Expect.equal m.errorMessage Nothing
