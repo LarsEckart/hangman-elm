@@ -26,8 +26,14 @@ The project follows a clean, embedded architecture:
 
 ### Running Tests
 ```bash
-# Run all tests (69 tests total)
+# Run all tests (70 tests total)
 elm-test
+
+# Run tests with specific options
+elm-test --watch                    # Watch mode for development
+elm-test --seed 123                # Run with specific seed for reproducibility
+elm-test --fuzz 50                 # Adjust fuzz test iterations
+elm-test --report json             # JSON output format
 ```
 
 ### Running the Application
@@ -40,6 +46,12 @@ npm run build
 
 # Build word lists only
 npm run build-wordlists
+
+# Watch CSV files for changes (development)
+npm run watch
+
+# Alternative build script (does same as npm run build)
+./build_project.sh
 ```
 
 ### Deployment
@@ -97,7 +109,7 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 
 ## Testing Strategy ✅ **COMPLETED**
 
-**69 total tests passing**:
+**70 total tests passing**:
 - **GameLogicTest.elm**: All core game logic functions with edge cases
 - **UpdateTest.elm**: Message handling, state transitions, and UI language functionality
 - Comprehensive coverage of input validation, win/loss conditions
