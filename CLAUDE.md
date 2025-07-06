@@ -4,13 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **completed** Hangman game implementation in Elm with build-time embedded word lists. The project transformed from HTTP-based word loading to a fully self-contained system with zero network dependencies.
+This is a Hangman game implementation in Elm.
 
 **🌐 Live Demo**: https://hangman-claudecode.netlify.app/
 
-## Architecture ✅ **COMPLETED**
+### ⚠️ **IMPORTANT: VERSION MANAGEMENT**
+**Any change you make, think about if it is minor or patch level and bump the version in `package.json` - we don't want to forget this, ever!**
 
-The project follows a clean, embedded architecture:
+- **Patch** (`1.0.0` → `1.0.1`): Bug fixes, small UI tweaks
+- **Minor** (`1.0.1` → `1.1.0`): New features, significant improvements  
+- **Major** (`1.1.0` → `2.0.0`): Breaking changes, major redesign
+
+Use: `npm version patch` or `npm version minor` or `npm version major`
+
+## Architecture
 
 - **`src/Main.elm`**: Complete application with Model-View-Update pattern
 - **`src/Types.elm`**: All type definitions for the 6-screen application flow
@@ -28,13 +35,6 @@ The project follows a clean, embedded architecture:
 ```bash
 # Run all tests (70 tests total)
 elm-test
-
-# Run tests with specific options
-elm-test --watch                    # Watch mode for development
-elm-test --seed 123                # Run with specific seed for reproducibility
-elm-test --fuzz 50                 # Adjust fuzz test iterations
-elm-test --report json             # JSON output format
-```
 
 ### Running the Application
 ```bash
@@ -56,6 +56,7 @@ npm run watch
 
 ### Deployment
 - **Automatic**: Every commit to main branch deploys to https://hangman-claudecode.netlify.app/
+- **PR preview**: All pull requests also get automatically deployed, netlify adds a comment about it
 - **Build command**: `npm run build`
 - **Publish directory**: `dist`
 
@@ -65,8 +66,9 @@ The project strictly follows TDD:
 2. Implement minimum code to make tests pass
 3. Refactor while keeping tests green
 4. Never implement features without tests
+5. Create a Pull Request using GitHub CLI
 
-## Game Architecture ✅ **COMPLETED**
+## Game Architecture
 
 The game follows a 6-screen architecture with complete internationalization:
 - **Start Screen**: Game title and start button (fully translated)
@@ -91,7 +93,7 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 - `isGameWon`/`isGameLost`: Win/loss condition checks
 - `isValidGuess`: Input validation for single letters
 
-## Build System ✅ **COMPLETED**
+## Build System
 
 **Node.js Build Script** (`scripts/build-wordlists.js`):
 - Discovers CSV files in `src/wordlists/` (12 files found)
@@ -107,26 +109,7 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 - `npm run build`: Build + create production HTML with offline support
 - `npm run test`: Run elm-test suite
 
-## Testing Strategy ✅ **COMPLETED**
-
-**70 total tests passing**:
-- **GameLogicTest.elm**: All core game logic functions with edge cases
-- **UpdateTest.elm**: Message handling, state transitions, and UI language functionality
-- Comprehensive coverage of input validation, win/loss conditions
-- Tests updated for embedded word list behavior
-- Complete test coverage for internationalization features
-
-## Implementation Status ✅ **ALL PHASES COMPLETED**
-
-- ✅ **Phase 0**: Prerequisites and test fixes
-- ✅ **Phase 1**: Build script development and CSV processing
-- ✅ **Phase 2**: Feature flag implementation and parallel systems
-- ✅ **Phase 3**: Full migration to embedded system and cleanup
-- ✅ **UI Internationalization**: Complete multilingual UI with type-safe translations
-
-See `plan.md` for detailed implementation history.
-
-## Offline Functionality ✅ **COMPLETED**
+## Offline Functionality
 
 The game includes full offline support via Service Worker:
 
@@ -139,15 +122,6 @@ The game includes full offline support via Service Worker:
 - **`sw-template.js`**: Service Worker template with version placeholder
 - **`scripts/build-sw.js`**: Build script that injects version from package.json
 - **`scripts/add-viewport.js`**: Enhanced to add Service Worker registration to HTML
-
-### ⚠️ **IMPORTANT: VERSION MANAGEMENT**
-**Any change you make, think about if it is minor or patch level and bump the version in `package.json` - we don't want to forget this, ever!**
-
-- **Patch** (`1.0.0` → `1.0.1`): Bug fixes, small UI tweaks
-- **Minor** (`1.0.1` → `1.1.0`): New features, significant improvements  
-- **Major** (`1.1.0` → `2.0.0`): Breaking changes, major redesign
-
-Use: `npm version patch` or `npm version minor` or `npm version major`
 
 ## Key Design Principles
 
