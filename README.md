@@ -6,20 +6,20 @@ A classic Hangman word-guessing game built with Elm featuring **build-time embed
 
 ## Features
 
-- **🌍 Multiple Languages**: Play in English, German, or Estonian
+- **🌍 Full Internationalization**: Play in English, German, or Estonian with complete UI translation
 - **📂 Categories**: Choose from Animals, Food, or Sport
 - **🎯 Multiple Difficulty Levels**: Easy (3-5 letters), Medium (6-8 letters), Hard (9+ letters)
 - **⚡ Zero Network Dependencies**: 109 words embedded at build time - no HTTP requests
 - **🚀 Instant Loading**: Self-contained HTML file with embedded word lists
 - **✅ Input Validation**: Prevents invalid guesses and duplicate letters
 - **🎮 Game State Management**: Tracks progress, remaining guesses, and win/loss conditions
-- **🎨 Clean UI**: Intuitive 6-screen interface with clear visual feedback
+- **🎨 Multilingual UI**: Intuitive 6-screen interface with complete language localization
 - **📱 Self-Contained**: Works offline, no server required
 
 ## Game Rules
 
 1. **Start the Game**: Click "Start Game" to begin
-2. **Select Language**: Choose English, German, or Estonian
+2. **Select Language**: Choose English, German, or Estonian (UI automatically adapts)
 3. **Select Category**: Pick Animals, Food & Drinks, or Sport
 4. **Select Difficulty**: Choose your preferred difficulty level
 5. **Make Guesses**: Enter one letter at a time to guess the word
@@ -92,6 +92,7 @@ hangman-elm/
 │   ├── Main.elm              # Complete 6-screen Elm app
 │   ├── Types.elm             # Type definitions and model
 │   ├── GameLogic.elm         # Pure game logic functions
+│   ├── Translations.elm      # Internationalization system (47 translation keys)
 │   ├── Generated/            # Auto-generated (gitignored)
 │   │   └── WordLists.elm     # Embedded 3D word structure
 │   └── wordlists/            # Source CSV files (12 files)
@@ -103,7 +104,7 @@ hangman-elm/
 │   └── build-wordlists.js    # CSV → Elm code generator
 ├── tests/
 │   ├── GameLogicTest.elm     # Core game logic tests (46 tests)
-│   └── UpdateTest.elm        # Update function tests (7 tests)
+│   └── UpdateTest.elm        # Update function tests (23 tests)
 ├── dist/                     # Build output
 │   └── index.html           # Self-contained game
 ├── package.json              # Build scripts and dependencies
@@ -124,6 +125,7 @@ hangman-elm/
 - **Update**: Pure state transitions in `Main.elm`
 - **View**: Declarative 6-screen UI in `Main.elm`
 - **Game Logic**: Pure functions in `GameLogic.elm`
+- **Internationalization**: Type-safe translations in `Translations.elm`
 
 ## Core Game Logic
 
@@ -136,15 +138,16 @@ All game logic implemented as pure functions:
 
 ## Testing
 
-**53 comprehensive tests** using Test-Driven Development:
+**69 comprehensive tests** using Test-Driven Development:
 - **GameLogicTest.elm**: Core game mechanics and edge cases (46 tests)
-- **UpdateTest.elm**: State transitions and message handling (7 tests)
+- **UpdateTest.elm**: State transitions, message handling, and UI language functionality (23 tests)
 
 **Coverage includes**:
 - Input validation (empty, non-letters, duplicates)
 - Case sensitivity and special characters
 - Win/loss detection and state transitions
 - Embedded word list behavior
+- UI language synchronization with game language
 
 ## Build-Time Word List System
 
@@ -187,6 +190,7 @@ MIT License - Open source and contributions welcome!
 ## Contributing
 
 1. Follow TDD principles - write tests first
-2. Run `npm test` to ensure all 53 tests pass
+2. Run `npm test` to ensure all 69 tests pass
 3. Add new CSV word lists in `src/wordlists/`
 4. Maintain pure function architecture
+5. For UI changes, ensure translations are added to `Translations.elm`

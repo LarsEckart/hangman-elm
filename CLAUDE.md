@@ -15,17 +15,18 @@ The project follows a clean, embedded architecture:
 - **`src/Main.elm`**: Complete application with Model-View-Update pattern
 - **`src/Types.elm`**: All type definitions for the 6-screen application flow
 - **`src/GameLogic.elm`**: Core game logic as pure functions (no side effects)
+- **`src/Translations.elm`**: Internationalization system with 47 translation keys
 - **`src/Generated/WordLists.elm`**: Auto-generated embedded word lists (gitignored)
 - **`scripts/build-wordlists.js`**: Build-time CSV processor and Elm code generator
 - **Tests**:
   - `tests/GameLogicTest.elm`: Comprehensive game logic tests (46 tests)
-  - `tests/UpdateTest.elm`: Update function and state transition tests (7 tests)
+  - `tests/UpdateTest.elm`: Update function and state transition tests (23 tests)
 
 ## Development Commands
 
 ### Running Tests
 ```bash
-# Run all tests (53 tests total)
+# Run all tests (69 tests total)
 elm-test
 ```
 
@@ -55,13 +56,13 @@ The project strictly follows TDD:
 
 ## Game Architecture ✅ **COMPLETED**
 
-The game follows a 6-screen architecture with multi-language support:
-- **Start Screen**: Game title and start button
-- **Language Selection**: English, German, Estonian
-- **Category Selection**: Animals, Food, Sport
-- **Difficulty Selection**: Easy (3-5 letters), Medium (6-8 letters), Hard (9+ letters)
-- **Game Screen**: Main gameplay with masked word, guessed letters, and input
-- **Game Over Screen**: Win/loss state with play again option
+The game follows a 6-screen architecture with complete internationalization:
+- **Start Screen**: Game title and start button (fully translated)
+- **Language Selection**: English, German, Estonian (UI adapts immediately)
+- **Category Selection**: Animals, Food, Sport (localized category names)
+- **Difficulty Selection**: Easy (3-5 letters), Medium (6-8 letters), Hard (9+ letters) (translated descriptions)
+- **Game Screen**: Main gameplay with masked word, guessed letters, and input (all UI elements translated)
+- **Game Over Screen**: Win/loss state with play again option (localized messages)
 
 ### Word List System
 - **109 words** embedded from 12 CSV files at build time
@@ -95,11 +96,12 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 
 ## Testing Strategy ✅ **COMPLETED**
 
-**53 total tests passing**:
+**69 total tests passing**:
 - **GameLogicTest.elm**: All core game logic functions with edge cases
-- **UpdateTest.elm**: Message handling and state transitions
+- **UpdateTest.elm**: Message handling, state transitions, and UI language functionality
 - Comprehensive coverage of input validation, win/loss conditions
 - Tests updated for embedded word list behavior
+- Complete test coverage for internationalization features
 
 ## Implementation Status ✅ **ALL PHASES COMPLETED**
 
@@ -107,6 +109,7 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 - ✅ **Phase 1**: Build script development and CSV processing
 - ✅ **Phase 2**: Feature flag implementation and parallel systems
 - ✅ **Phase 3**: Full migration to embedded system and cleanup
+- ✅ **UI Internationalization**: Complete multilingual UI with type-safe translations
 
 See `plan.md` for detailed implementation history.
 
@@ -117,3 +120,4 @@ See `plan.md` for detailed implementation history.
 - **Type Safety**: Leveraging Elm's type system for robust code
 - **Test Coverage**: Every function has comprehensive test coverage before implementation
 - **Separation of Concerns**: Clear boundaries between logic, state, and view layers
+- **Internationalization**: Type-safe translation system with complete UI localization
