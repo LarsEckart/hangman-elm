@@ -297,9 +297,7 @@ viewGameScreen model =
         [ h2 (applyStyles screenTitleStyles) [ text (T.translate model.uiLanguage T.Hangman) ]
         , div (applyStyles gameInfoStyles)
             [ p [] 
-                [ text (T.translate model.uiLanguage T.CategoryLabel ++ (getCategoryName model.uiLanguage model.selectedCategory)) ]
-            , p [] 
-                [ text (T.translate model.uiLanguage T.DifficultyLabel ++ (getDifficultyName model.uiLanguage model.selectedDifficulty)) ]
+                [ text (getCategoryName model.uiLanguage model.selectedCategory) ]
             , p [] 
                 [ text (T.translate model.uiLanguage T.RemainingGuesses ++ String.fromInt model.remainingGuesses) ]
             ]
