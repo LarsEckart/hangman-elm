@@ -3,6 +3,7 @@ module GameLogicTest exposing (..)
 import Expect
 import Test exposing (..)
 import GameLogic exposing (..)
+import Types exposing (wordFromString)
 
 
 suite : Test
@@ -11,19 +12,19 @@ suite =
         [ describe "isLetterInWord"
             [ test "returns True when letter is in word" <|
                 \_ ->
-                    isLetterInWord 'a' "cat"
+                    isLetterInWord 'a' (wordFromString "cat")
                         |> Expect.equal True
             , test "returns False when letter is not in word" <|
                 \_ ->
-                    isLetterInWord 'z' "cat"
+                    isLetterInWord 'z' (wordFromString "cat")
                         |> Expect.equal False
             , test "is case insensitive" <|
                 \_ ->
-                    isLetterInWord 'A' "cat"
+                    isLetterInWord 'A' (wordFromString "cat")
                         |> Expect.equal True
             , test "handles empty word" <|
                 \_ ->
-                    isLetterInWord 'a' ""
+                    isLetterInWord 'a' (wordFromString "")
                         |> Expect.equal False
             ]
         , describe "updateGuessedLetters"
@@ -47,45 +48,45 @@ suite =
         , describe "getMaskedWord"
             [ test "shows all underscores when no letters guessed" <|
                 \_ ->
-                    getMaskedWord "cat" []
+                    getMaskedWord (wordFromString "cat") []
                         |> Expect.equal "___"
             , test "shows guessed letters in correct positions" <|
                 \_ ->
-                    getMaskedWord "CAT" ['A']
+                    getMaskedWord (wordFromString "CAT") ['A']
                         |> Expect.equal "_A_"
             , test "shows all letters when all are guessed" <|
                 \_ ->
-                    getMaskedWord "CAT" ['C', 'A', 'T']
+                    getMaskedWord (wordFromString "CAT") ['C', 'A', 'T']
                         |> Expect.equal "CAT"
             , test "handles empty word" <|
                 \_ ->
-                    getMaskedWord "" []
+                    getMaskedWord (wordFromString "") []
                         |> Expect.equal ""
             , test "is case insensitive" <|
                 \_ ->
-                    getMaskedWord "CAT" ['A']
+                    getMaskedWord (wordFromString "CAT") ['A']
                         |> Expect.equal "_A_"
             ]
         , describe "isGameWon"
             [ test "returns True when all letters are guessed" <|
                 \_ ->
-                    isGameWon "CAT" ['C', 'A', 'T']
+                    isGameWon (wordFromString "CAT") ['C', 'A', 'T']
                         |> Expect.equal True
             , test "returns False when some letters are missing" <|
                 \_ ->
-                    isGameWon "CAT" ['C', 'A']
+                    isGameWon (wordFromString "CAT") ['C', 'A']
                         |> Expect.equal False
             , test "returns False when no letters are guessed" <|
                 \_ ->
-                    isGameWon "CAT" []
+                    isGameWon (wordFromString "CAT") []
                         |> Expect.equal False
             , test "returns True for empty word" <|
                 \_ ->
-                    isGameWon "" []
+                    isGameWon (wordFromString "") []
                         |> Expect.equal True
             , test "handles duplicate letters in word" <|
                 \_ ->
-                    isGameWon "BOOK" ['B', 'O', 'K']
+                    isGameWon (wordFromString "BOOK") ['B', 'O', 'K']
                         |> Expect.equal True
             ]
         , describe "isGameLost"
@@ -131,27 +132,27 @@ suite =
         , describe "calculateRemainingGuesses"
             [ test "returns same count when correct guess is made" <|
                 \_ ->
-                    calculateRemainingGuesses "CAT" ['C'] 6
+                    calculateRemainingGuesses (wordFromString "CAT") ['C'] 6
                         |> Expect.equal 6
             , test "decrements count when wrong guess is made" <|
                 \_ ->
-                    calculateRemainingGuesses "CAT" ['Z'] 6
+                    calculateRemainingGuesses (wordFromString "CAT") ['Z'] 6
                         |> Expect.equal 5
             , test "handles multiple correct guesses" <|
                 \_ ->
-                    calculateRemainingGuesses "CAT" ['C', 'A'] 6
+                    calculateRemainingGuesses (wordFromString "CAT") ['C', 'A'] 6
                         |> Expect.equal 6
             , test "handles multiple wrong guesses" <|
                 \_ ->
-                    calculateRemainingGuesses "CAT" ['Z', 'X'] 6
+                    calculateRemainingGuesses (wordFromString "CAT") ['Z', 'X'] 6
                         |> Expect.equal 4
             , test "handles mixed correct and wrong guesses" <|
                 \_ ->
-                    calculateRemainingGuesses "CAT" ['C', 'Z', 'A', 'X'] 6
+                    calculateRemainingGuesses (wordFromString "CAT") ['C', 'Z', 'A', 'X'] 6
                         |> Expect.equal 4
             , test "handles empty guessed letters list" <|
                 \_ ->
-                    calculateRemainingGuesses "CAT" [] 6
+                    calculateRemainingGuesses (wordFromString "CAT") [] 6
                         |> Expect.equal 6
             ]
         ]

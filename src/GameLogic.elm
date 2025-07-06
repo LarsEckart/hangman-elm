@@ -1,9 +1,11 @@
 module GameLogic exposing (..)
 
+import Types exposing (Word, wordToString, wordContains, wordToList)
 
-isLetterInWord : Char -> String -> Bool
+
+isLetterInWord : Char -> Word -> Bool
 isLetterInWord letter word =
-    String.contains (String.fromChar (Char.toUpper letter)) (String.toUpper word)
+    wordContains (String.fromChar (Char.toUpper letter)) word
 
 
 updateGuessedLetters : Char -> List Char -> List Char
@@ -17,26 +19,26 @@ updateGuessedLetters letter guessedLetters =
         guessedLetters ++ [upperLetter]
 
 
-getMaskedWord : String -> List Char -> String
+getMaskedWord : Word -> List Char -> String
 getMaskedWord word guessedLetters =
-    let
-        upperWord = String.toUpper word
-        -- guessedLetters are already in uppercase format
-    in
-    String.map (\char ->
-        if List.member (Char.toUpper char) guessedLetters then
-            Char.toUpper char
-        else
-            '_'
-    ) upperWord
+    -- word is already in uppercase format from build script
+    -- guessedLetters are already in uppercase format
+    wordToList word
+        |> List.map (\char ->
+            if List.member char guessedLetters then
+                char
+            else
+                '_'
+        )
+        |> String.fromList
 
 
-isGameWon : String -> List Char -> Bool
+isGameWon : Word -> List Char -> Bool
 isGameWon word guessedLetters =
+    -- word is already in uppercase format from build script
+    -- guessedLetters are already in uppercase format
     let
-        upperWord = String.toUpper word
-        -- guessedLetters are already in uppercase format
-        uniqueLetters = String.toList upperWord |> List.foldr (\char acc -> if List.member char acc then acc else char :: acc) []
+        uniqueLetters = wordToList word |> List.foldr (\char acc -> if List.member char acc then acc else char :: acc) []
     in
     List.all (\char -> List.member char guessedLetters) uniqueLetters
 
@@ -55,12 +57,12 @@ isValidGuess char guessedLetters =
     Char.isAlpha char && not (List.member upperChar guessedLetters)
 
 
-calculateRemainingGuesses : String -> List Char -> Int -> Int
+calculateRemainingGuesses : Word -> List Char -> Int -> Int
 calculateRemainingGuesses word guessedLetters initialGuesses =
+    -- word is already in uppercase format from build script
+    -- guessedLetters are already in uppercase format
     let
-        upperWord = String.toUpper word
-        -- guessedLetters are already in uppercase format
-        wrongGuesses = List.filter (\letter -> not (String.contains (String.fromChar letter) upperWord)) guessedLetters
+        wrongGuesses = List.filter (\letter -> not (wordContains (String.fromChar letter) word)) guessedLetters
         wrongGuessCount = List.length wrongGuesses
     in
     initialGuesses - wrongGuessCount

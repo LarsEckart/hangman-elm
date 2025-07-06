@@ -1,7 +1,29 @@
 module Types exposing (..)
 
--- Type aliases for clarity and readability
-type alias Word = String
+-- Opaque type for Word to ensure type safety and guarantee uppercase
+type Word = Word String
+
+-- Helper functions for Word opaque type
+wordFromString : String -> Word
+wordFromString str =
+    Word (String.toUpper str)
+
+wordToString : Word -> String
+wordToString (Word str) =
+    str
+
+wordContains : String -> Word -> Bool
+wordContains substring (Word str) =
+    String.contains substring str
+
+wordToList : Word -> List Char
+wordToList (Word str) =
+    String.toList str
+
+wordLength : Word -> Int
+wordLength (Word str) =
+    String.length str
+
 type alias GuessedLetters = List Char
 type alias RemainingGuesses = Int
 type alias UserInput = String
@@ -116,10 +138,10 @@ getDifficultyWordLength difficulty =
 isValidWordForDifficulty : Word -> Difficulty -> Bool
 isValidWordForDifficulty word difficulty =
     let
-        wordLength = String.length word
+        length = wordLength word
         { min, max } = getDifficultyWordLength difficulty
     in
-    wordLength >= min && wordLength <= max
+    length >= min && length <= max
 
 
 -- Helper functions for error handling
@@ -213,7 +235,7 @@ validateUserInput input guessedLetters =
 resetGame : Model -> Model
 resetGame model =
     { model
-    | currentWord = ""
+    | currentWord = wordFromString ""
     , guessedLetters = []
     , remainingGuesses = maxGuesses
     , gameState = Playing
@@ -231,7 +253,7 @@ initialModel =
     , uiLanguage = English  -- Default UI language
     , selectedCategory = Nothing
     , selectedDifficulty = Nothing
-    , currentWord = ""
+    , currentWord = wordFromString ""
     , guessedLetters = []
     , remainingGuesses = maxGuesses
     , gameState = Playing

@@ -6,6 +6,7 @@ import Html.Attributes exposing (class, type_, value, placeholder, disabled, sty
 import Html.Events exposing (onClick, onInput)
 import Random
 import Types exposing (..)
+import Types exposing (wordFromString, wordToString)
 import GameLogic exposing (..)
 import Generated.WordLists as EmbeddedWordLists
 import Translations as T
@@ -282,7 +283,7 @@ handleWordSelected difficulty index model =
     in
     ( { model 
       | currentScreen = Game
-      , currentWord = selectedWord
+      , currentWord = wordFromString selectedWord
       }
     , Cmd.none
     )
@@ -380,7 +381,7 @@ viewGameOver model =
                 [ text (if model.gameState == Won then T.translate model.uiLanguage T.YouWon else T.translate model.uiLanguage T.YouLost) ]
             , div (applyStyles wordRevealStyles)
                 [ p (applyStyles wordLabelStyles) [ text (T.translate model.uiLanguage T.WordWas) ]
-                , h2 (applyStyles revealedWordStyles) [ text model.currentWord ]
+                , h2 (applyStyles revealedWordStyles) [ text (wordToString model.currentWord) ]
                 ]
             , div (applyStyles gameStatsStyles)
                 [ p [] [ text (T.translate model.uiLanguage T.GuessedLettersStats ++ formatGuessedLetters model.uiLanguage model.guessedLetters) ]
@@ -870,7 +871,7 @@ getAlphabetForLanguage language =
 
 
 -- Generate letter buttons for the alphabet
-viewLetterButtons : Language -> String -> List Char -> GameState -> List (Html Msg)
+viewLetterButtons : Language -> Word -> List Char -> GameState -> List (Html Msg)
 viewLetterButtons language currentWord guessedLetters gameState =
     let
         alphabet = getAlphabetForLanguage language

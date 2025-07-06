@@ -3,6 +3,7 @@ module UpdateTest exposing (..)
 import Test exposing (..)
 import Expect exposing (Expectation)
 import Types exposing (..)
+import Types exposing (wordFromString, wordToString)
 import Main exposing (update, init)
 
 
@@ -28,7 +29,7 @@ suite =
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Start
                         , \m -> Expect.equal m.selectedDifficulty Nothing
-                        , \m -> Expect.equal m.currentWord ""
+                        , \m -> Expect.equal (wordToString m.currentWord) ""
                         , \m -> Expect.equal m.guessedLetters []
                         , \m -> Expect.equal m.remainingGuesses maxGuesses
                         , \m -> Expect.equal m.gameState Playing
@@ -120,7 +121,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "c"
                             , gameState = Playing
                             }
@@ -140,7 +141,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "x"
                             , gameState = Playing
                             }
@@ -160,7 +161,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = ""
                             , gameState = Playing
                             }
@@ -180,7 +181,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "abc"
                             , gameState = Playing
                             }
@@ -200,7 +201,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "c"
                             , guessedLetters = ['C', 'A']
                             , gameState = Playing
@@ -221,7 +222,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "1"
                             , gameState = Playing
                             }
@@ -241,7 +242,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "t"
                             , guessedLetters = ['C', 'A']
                             , gameState = Playing
@@ -261,7 +262,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "z"
                             , guessedLetters = ['X', 'Y', 'W', 'V', 'U']
                             , remainingGuesses = 1
@@ -282,7 +283,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = GameOver
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "c"
                             , gameState = Won
                             }
@@ -302,7 +303,7 @@ suite =
                         gameOverModel = 
                             { initialModel 
                             | currentScreen = GameOver
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , guessedLetters = ['C', 'A', 'T']
                             , remainingGuesses = 3
                             , gameState = Won
@@ -312,7 +313,7 @@ suite =
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Start
-                        , \m -> Expect.equal m.currentWord ""
+                        , \m -> Expect.equal (wordToString m.currentWord) ""
                         , \m -> Expect.equal m.guessedLetters []
                         , \m -> Expect.equal m.remainingGuesses maxGuesses
                         , \m -> Expect.equal m.gameState Playing
@@ -330,7 +331,7 @@ suite =
                         gameOverModel = 
                             { initialModel 
                             | currentScreen = GameOver
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , guessedLetters = ['C', 'A', 'T']
                             , remainingGuesses = 3
                             , gameState = Won
@@ -341,7 +342,7 @@ suite =
                         updatedModel = updateModel PlayAgain gameOverModel
                     in
                     Expect.all
-                        [ \m -> Expect.equal m.currentWord ""
+                        [ \m -> Expect.equal (wordToString m.currentWord) ""
                         , \m -> Expect.equal m.guessedLetters []
                         , \m -> Expect.equal m.remainingGuesses maxGuesses
                         , \m -> Expect.equal m.gameState Playing
@@ -360,7 +361,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , guessedLetters = ['C', 'A']
                             , remainingGuesses = 4
                             , selectedDifficulty = Just Medium
@@ -370,7 +371,7 @@ suite =
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Start
-                        , \m -> Expect.equal m.currentWord ""
+                        , \m -> Expect.equal (wordToString m.currentWord) ""
                         , \m -> Expect.equal m.guessedLetters []
                         , \m -> Expect.equal m.remainingGuesses maxGuesses
                         , \m -> Expect.equal m.gameState Playing
@@ -388,14 +389,14 @@ suite =
                             { initialModel 
                             | errorMessage = Just (GameStateError "Test error")
                             , currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             }
                         updatedModel = updateModel ClearError modelWithError
                     in
                     Expect.all
                         [ \m -> Expect.equal m.errorMessage Nothing
                         , \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.currentWord "CAT"
+                        , \m -> Expect.equal (wordToString m.currentWord) "CAT"
                         ]
                         updatedModel
             ]
@@ -519,7 +520,7 @@ suite =
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.currentWord "DOG"
+                        , \m -> Expect.equal (wordToString m.currentWord) "DOG"
                         ]
                         updatedModel
             
@@ -538,7 +539,7 @@ suite =
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.currentWord "CAT"
+                        , \m -> Expect.equal (wordToString m.currentWord) "CAT"
                         ]
                         updatedModel
             
@@ -557,7 +558,7 @@ suite =
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.currentWord ""  -- Should default to empty string
+                        , \m -> Expect.equal (wordToString m.currentWord) ""  -- Should default to empty string
                         ]
                         updatedModel
             
@@ -576,7 +577,7 @@ suite =
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game
-                        , \m -> Expect.equal m.currentWord ""  -- Should default to empty string
+                        , \m -> Expect.equal (wordToString m.currentWord) ""  -- Should default to empty string
                         ]
                         updatedModel
             ]
@@ -612,7 +613,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "A"
+                            , currentWord = wordFromString "A"
                             , userInput = "a"
                             , gameState = Playing
                             }
@@ -631,7 +632,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "CAT"
+                            , currentWord = wordFromString "CAT"
                             , userInput = "C"
                             , gameState = Playing
                             }
@@ -650,7 +651,7 @@ suite =
                         gameModel = 
                             { initialModel 
                             | currentScreen = Game
-                            , currentWord = "A"
+                            , currentWord = wordFromString "A"
                             , userInput = "a"
                             , gameState = Playing
                             }
@@ -661,7 +662,7 @@ suite =
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen CategorySelection
                         , \m -> Expect.equal m.selectedLanguage (Just English)
-                        , \m -> Expect.equal m.currentWord ""
+                        , \m -> Expect.equal (wordToString m.currentWord) ""
                         , \m -> Expect.equal m.gameState Playing
                         ]
                         thirdUpdate
