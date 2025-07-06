@@ -369,4 +369,253 @@ suite =
                         ]
                         updatedModel
             ]
+        , describe "SelectLanguage message"
+            [ test "transitions from LanguageSelection to CategorySelection" <|
+                \_ ->
+                    let
+                        modelOnLanguageScreen = { initialModel | currentScreen = LanguageSelection }
+                        updatedModel = updateModel (SelectLanguage English) modelOnLanguageScreen
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen CategorySelection
+                        , \m -> Expect.equal m.selectedLanguage (Just English)
+                        ]
+                        updatedModel
+            
+            , test "selects German language correctly" <|
+                \_ ->
+                    let
+                        modelOnLanguageScreen = { initialModel | currentScreen = LanguageSelection }
+                        updatedModel = updateModel (SelectLanguage German) modelOnLanguageScreen
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen CategorySelection
+                        , \m -> Expect.equal m.selectedLanguage (Just German)
+                        ]
+                        updatedModel
+            
+            , test "selects Estonian language correctly" <|
+                \_ ->
+                    let
+                        modelOnLanguageScreen = { initialModel | currentScreen = LanguageSelection }
+                        updatedModel = updateModel (SelectLanguage Estonian) modelOnLanguageScreen
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen CategorySelection
+                        , \m -> Expect.equal m.selectedLanguage (Just Estonian)
+                        ]
+                        updatedModel
+            ]
+        , describe "SelectCategory message"
+            [ test "transitions from CategorySelection to DifficultySelection" <|
+                \_ ->
+                    let
+                        modelOnCategoryScreen = 
+                            { initialModel 
+                            | currentScreen = CategorySelection
+                            , selectedLanguage = Just English
+                            }
+                        updatedModel = updateModel (SelectCategory Animals) modelOnCategoryScreen
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen DifficultySelection
+                        , \m -> Expect.equal m.selectedCategory (Just Animals)
+                        ]
+                        updatedModel
+            
+            , test "selects Food category correctly" <|
+                \_ ->
+                    let
+                        modelOnCategoryScreen = 
+                            { initialModel 
+                            | currentScreen = CategorySelection
+                            , selectedLanguage = Just English
+                            }
+                        updatedModel = updateModel (SelectCategory Food) modelOnCategoryScreen
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen DifficultySelection
+                        , \m -> Expect.equal m.selectedCategory (Just Food)
+                        ]
+                        updatedModel
+            
+            , test "selects Sport category correctly" <|
+                \_ ->
+                    let
+                        modelOnCategoryScreen = 
+                            { initialModel 
+                            | currentScreen = CategorySelection
+                            , selectedLanguage = Just English
+                            }
+                        updatedModel = updateModel (SelectCategory Sport) modelOnCategoryScreen
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen DifficultySelection
+                        , \m -> Expect.equal m.selectedCategory (Just Sport)
+                        ]
+                        updatedModel
+            ]
+        , describe "WordSelected message"
+            [ test "transitions to Game screen with selected word" <|
+                \_ ->
+                    let
+                        modelWithWordList = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedLanguage = Just English
+                            , selectedCategory = Just Animals
+                            , selectedDifficulty = Just Easy
+                            , wordList = ["cat", "dog", "bird"]
+                            }
+                        updatedModel = updateModel (WordSelected Easy 1) modelWithWordList
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen Game
+                        , \m -> Expect.equal m.currentWord "dog"
+                        ]
+                        updatedModel
+            
+            , test "handles word selection with index 0" <|
+                \_ ->
+                    let
+                        modelWithWordList = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedLanguage = Just English
+                            , selectedCategory = Just Animals
+                            , selectedDifficulty = Just Easy
+                            , wordList = ["cat", "dog", "bird"]
+                            }
+                        updatedModel = updateModel (WordSelected Easy 0) modelWithWordList
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen Game
+                        , \m -> Expect.equal m.currentWord "cat"
+                        ]
+                        updatedModel
+            
+            , test "handles word selection with out-of-bounds index" <|
+                \_ ->
+                    let
+                        modelWithWordList = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedLanguage = Just English
+                            , selectedCategory = Just Animals
+                            , selectedDifficulty = Just Easy
+                            , wordList = ["cat", "dog", "bird"]
+                            }
+                        updatedModel = updateModel (WordSelected Easy 10) modelWithWordList
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen Game
+                        , \m -> Expect.equal m.currentWord ""  -- Should default to empty string
+                        ]
+                        updatedModel
+            
+            , test "handles word selection with empty word list" <|
+                \_ ->
+                    let
+                        modelWithEmptyWordList = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedLanguage = Just English
+                            , selectedCategory = Just Animals
+                            , selectedDifficulty = Just Easy
+                            , wordList = []
+                            }
+                        updatedModel = updateModel (WordSelected Easy 0) modelWithEmptyWordList
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen Game
+                        , \m -> Expect.equal m.currentWord ""  -- Should default to empty string
+                        ]
+                        updatedModel
+            ]
+        , describe "Edge cases and error conditions"
+            [ test "SelectDifficulty handles no words available scenario" <|
+                \_ ->
+                    let
+                        modelWithSelections = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            , selectedLanguage = Just Estonian  -- Might have limited words
+                            , selectedCategory = Just Sport
+                            }
+                        updatedModel = updateModel (SelectDifficulty Hard) modelWithSelections
+                    in
+                    -- Should either generate a random word or show error - depends on word availability
+                    Expect.notEqual updatedModel.currentScreen Start  -- Should not crash
+            
+            , test "SelectDifficulty with both language and category missing" <|
+                \_ ->
+                    let
+                        modelWithoutSelections = 
+                            { initialModel 
+                            | currentScreen = DifficultySelection
+                            }
+                        updatedModel = updateModel (SelectDifficulty Easy) modelWithoutSelections
+                    in
+                    Expect.equal updatedModel.errorMessage (Just (SelectionIncomplete { missingLanguage = True, missingCategory = True }))
+            
+            , test "MakeGuess with winning guess on single letter word" <|
+                \_ ->
+                    let
+                        gameModel = 
+                            { initialModel 
+                            | currentScreen = Game
+                            , currentWord = "a"
+                            , userInput = "a"
+                            , gameState = Playing
+                            }
+                        updatedModel = updateModel MakeGuess gameModel
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen GameOver
+                        , \m -> Expect.equal m.gameState Won
+                        , \m -> Expect.equal m.guessedLetters ['a']
+                        ]
+                        updatedModel
+            
+            , test "MakeGuess with case-insensitive input" <|
+                \_ ->
+                    let
+                        gameModel = 
+                            { initialModel 
+                            | currentScreen = Game
+                            , currentWord = "Cat"
+                            , userInput = "C"
+                            , gameState = Playing
+                            }
+                        updatedModel = updateModel MakeGuess gameModel
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.guessedLetters ['c']  -- Should be lowercase
+                        , \m -> Expect.equal m.remainingGuesses maxGuesses
+                        , \m -> Expect.equal m.userInput ""
+                        ]
+                        updatedModel
+            
+            , test "handles consecutive wins and losses" <|
+                \_ ->
+                    let
+                        gameModel = 
+                            { initialModel 
+                            | currentScreen = Game
+                            , currentWord = "a"
+                            , userInput = "a"
+                            , gameState = Playing
+                            }
+                        firstUpdate = updateModel MakeGuess gameModel
+                        secondUpdate = updateModel PlayAgain firstUpdate
+                        thirdUpdate = updateModel (SelectLanguage English) secondUpdate
+                    in
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen CategorySelection
+                        , \m -> Expect.equal m.selectedLanguage (Just English)
+                        , \m -> Expect.equal m.currentWord ""
+                        , \m -> Expect.equal m.gameState Playing
+                        ]
+                        thirdUpdate
+            ]
         ]
