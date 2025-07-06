@@ -1,5 +1,7 @@
 module Types exposing (..)
 
+import Http
+
 -- Type aliases for clarity and readability
 type alias Word = String
 type alias GuessedLetters = List Char
@@ -10,9 +12,25 @@ type alias UserInput = String
 -- Screen/UI state management
 type GameScreen
     = Start
+    | LanguageSelection
+    | CategorySelection
     | DifficultySelection  
     | Game
     | GameOver
+
+
+-- Language options
+type Language
+    = English
+    | German
+    | Estonian
+
+
+-- Category options
+type Category
+    = Animals
+    | Food
+    | Sport
 
 
 -- Difficulty levels with corresponding word length ranges
@@ -32,6 +50,8 @@ type GameState
 -- Main application model
 type alias Model =
     { currentScreen : GameScreen
+    , selectedLanguage : Maybe Language
+    , selectedCategory : Maybe Category
     , selectedDifficulty : Maybe Difficulty
     , currentWord : Word
     , guessedLetters : GuessedLetters
@@ -39,12 +59,15 @@ type alias Model =
     , gameState : GameState
     , userInput : UserInput
     , errorMessage : Maybe String
+    , wordList : List String
     }
 
 
 -- Messages for user interactions and state updates
 type Msg
     = StartGame
+    | SelectLanguage Language
+    | SelectCategory Category
     | SelectDifficulty Difficulty
     | UpdateInput String
     | MakeGuess
@@ -52,6 +75,7 @@ type Msg
     | BackToStart
     | ClearError
     | WordSelected Difficulty Int
+    | LoadWordList (Result Http.Error String)
 
 
 -- Constants for game configuration
@@ -87,6 +111,8 @@ isValidWordForDifficulty word difficulty =
 initialModel : Model
 initialModel =
     { currentScreen = Start
+    , selectedLanguage = Nothing
+    , selectedCategory = Nothing
     , selectedDifficulty = Nothing
     , currentWord = ""
     , guessedLetters = []
@@ -94,4 +120,30 @@ initialModel =
     , gameState = Playing
     , userInput = ""
     , errorMessage = Nothing
+    , wordList = []
     }
+
+
+-- Helper functions for language/category/difficulty conversions
+languageToString : Language -> String
+languageToString language =
+    case language of
+        English -> "english"
+        German -> "german"
+        Estonian -> "estonian"
+
+
+categoryToString : Category -> String
+categoryToString category =
+    case category of
+        Animals -> "animals"
+        Food -> "food"
+        Sport -> "sport"
+
+
+difficultyToString : Difficulty -> String
+difficultyToString difficulty =
+    case difficulty of
+        Easy -> "easy"
+        Medium -> "medium"
+        Hard -> "hard"

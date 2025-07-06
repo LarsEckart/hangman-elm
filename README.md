@@ -4,8 +4,11 @@ A classic Hangman word-guessing game built with Elm using Test-Driven Developmen
 
 ## Features
 
+- **Multiple Languages**: Play in English, German, or Estonian
+- **Categories**: Choose from Animals, Food & Drinks, or Sport
 - **Multiple Difficulty Levels**: Choose from Easy (3-5 letters), Medium (6-8 letters), or Hard (9+ letters)
-- **Comprehensive Word Lists**: Over 20 carefully selected words for each difficulty level
+- **Dynamic Word Loading**: Words are loaded from CSV files based on your selections
+- **Comprehensive Word Lists**: Over 20 carefully selected words for each combination
 - **Input Validation**: Prevents invalid guesses and duplicate letters
 - **Game State Management**: Tracks game progress, remaining guesses, and win/loss conditions
 - **Clean UI**: Intuitive interface with clear visual feedback
@@ -14,11 +17,13 @@ A classic Hangman word-guessing game built with Elm using Test-Driven Developmen
 ## Game Rules
 
 1. **Start the Game**: Click "Start Game" to begin
-2. **Select Difficulty**: Choose your preferred difficulty level
-3. **Make Guesses**: Enter one letter at a time to guess the word
-4. **Win Condition**: Guess all letters in the word before running out of attempts
-5. **Loss Condition**: Use all 6 attempts without guessing the complete word
-6. **Play Again**: After each game, you can play again or return to the start screen
+2. **Select Language**: Choose English, German, or Estonian
+3. **Select Category**: Pick Animals, Food & Drinks, or Sport
+4. **Select Difficulty**: Choose your preferred difficulty level
+5. **Make Guesses**: Enter one letter at a time to guess the word
+6. **Win Condition**: Guess all letters in the word before running out of attempts
+7. **Loss Condition**: Use all 6 attempts without guessing the complete word
+8. **Play Again**: After each game, you can play again or return to the start screen
 
 ## How to Run the Game
 
@@ -39,15 +44,21 @@ A classic Hangman word-guessing game built with Elm using Test-Driven Developmen
 
 #### Option 1: Using Elm Reactor (Recommended)
 ```bash
+./serve.sh
+```
+Or manually:
+```bash
 elm reactor
 ```
-Then open your browser and navigate to `http://localhost:8000/src/Main.elm`
+Then open your browser and navigate to `http://localhost:8000/main.html`
 
 #### Option 2: Compile to HTML
 ```bash
-elm make src/Main.elm --output=index.html
+elm make src/Main.elm --output=main.html
 ```
-Then open `index.html` in your web browser
+Then open `main.html` in your web browser
+
+**Note**: Word lists are loaded from CSV files in `src/wordlists/`. If serving the compiled HTML directly, ensure the word list files are accessible at the correct path.
 
 ### Running Tests
 
@@ -74,13 +85,19 @@ hangman-elm/
 │   ├── Main.elm          # Entry point, UI, and update logic
 │   ├── Types.elm         # Type definitions and model
 │   ├── GameLogic.elm     # Pure game logic functions
-│   └── Words.elm         # Word lists by difficulty
+│   ├── Words.elm         # Word lists by difficulty (fallback)
+│   ├── WordLoader.elm    # CSV file loading functionality
+│   └── wordlists/        # CSV word list files
+│       ├── english-animals-easy.csv
+│       ├── german-animals-easy.csv
+│       ├── estonian-animals-easy.csv
+│       └── ... (more combinations)
 ├── tests/
 │   ├── GameLogicTest.elm # Tests for core game logic
 │   ├── UpdateTest.elm    # Tests for update function
 │   └── WordsTest.elm     # Tests for word management
 ├── elm.json              # Project configuration
-├── style.css             # Styling (optional)
+├── serve.sh              # Helper script to run the game
 └── README.md             # This file
 ```
 
@@ -123,11 +140,23 @@ The project uses comprehensive Test-Driven Development with 67 test cases coveri
 
 ## Word Lists
 
-Each difficulty level includes carefully selected words:
+Words are organized in CSV files by language, category, and difficulty:
 
-- **Easy**: 3-5 letter words (cat, dog, tree, house, etc.)
-- **Medium**: 6-8 letter words (computer, rainbow, adventure, etc.)
-- **Hard**: 9+ letter words (programming, javascript, architecture, etc.)
+### File Format
+- **Naming Convention**: `{language}-{category}-{difficulty}.csv`
+- **Example**: `english-animals-easy.csv`, `german-food-medium.csv`
+- **Structure**: One word per line in CSV files
+
+### Available Combinations
+- **Languages**: English, German, Estonian
+- **Categories**: Animals, Food & Drinks, Sport
+- **Difficulties**: 
+  - Easy: 3-5 letter words
+  - Medium: 6-8 letter words
+  - Hard: 9+ letter words
+
+### Adding New Word Lists
+To add new word lists, create a CSV file following the naming convention and place it in `src/wordlists/`. The game will automatically load words from the appropriate file based on user selections.
 
 ## Development
 

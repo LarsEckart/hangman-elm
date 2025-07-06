@@ -1,0 +1,35 @@
+# Elm build artifacts
+elm-stuff/
+repl-temp-*
+
+# Generated output
+main.html
+index.html
+!test-server.html
+
+# elm-test generated files
+tests/elm-stuff/
+tests/VerifyExamples/
+
+# Package manager files
+package-lock.json
+node_modules/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.log

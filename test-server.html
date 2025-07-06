@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test CSV Loading</title>
+</head>
+<body>
+    <h1>Testing CSV File Loading</h1>
+    <p>Check browser console for results</p>
+    
+    <script>
+        // Test loading a CSV file
+        fetch('src/wordlists/english-animals-easy.csv')
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.text();
+            })
+            .then(data => {
+                console.log('CSV content:', data);
+            })
+            .catch(error => {
+                console.error('Error loading CSV:', error);
+            });
+    </script>
+</body>
+</html>

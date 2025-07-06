@@ -4,10 +4,12 @@ import Browser
 import Html exposing (Html, div, h1, h2, p, button, input, text, span)
 import Html.Attributes exposing (class, type_, value, placeholder, disabled)
 import Html.Events exposing (onClick, onInput)
+import Http
 import Random
 import Types exposing (..)
 import GameLogic exposing (..)
 import Words exposing (getRandomWord, getWordsByDifficulty)
+import WordLoader exposing (loadWordList, parseWordList)
 
 
 -- Initialize the application model
@@ -22,28 +24,42 @@ update msg model =
     case msg of
         StartGame ->
             ( { model 
-            | currentScreen = DifficultySelection
+            | currentScreen = LanguageSelection
             , errorMessage = Nothing
             }
             , Cmd.none
             )
         
-        SelectDifficulty difficulty ->
-            let
-                words = getWordsByDifficulty difficulty
-                wordCount = List.length words
-                generator = Random.int 0 (wordCount - 1)
-            in
+        SelectLanguage language ->
             ( { model 
-            | selectedDifficulty = Just difficulty
-            , guessedLetters = []
-            , remainingGuesses = maxGuesses
-            , gameState = Playing
-            , userInput = ""
-            , errorMessage = Nothing
+            | selectedLanguage = Just language
+            , currentScreen = CategorySelection
             }
-            , Random.generate (WordSelected difficulty) generator
+            , Cmd.none
             )
+        
+        SelectCategory category ->
+            ( { model 
+            | selectedCategory = Just category
+            , currentScreen = DifficultySelection
+            }
+            , Cmd.none
+            )
+        
+        SelectDifficulty difficulty ->
+            case (model.selectedLanguage, model.selectedCategory) of
+                (Just language, Just category) ->
+                    ( { model 
+                      | selectedDifficulty = Just difficulty
+                      , errorMessage = Just "Loading word list..."
+                      }
+                    , loadWordList language category difficulty
+                    )
+                _ ->
+                    -- This shouldn't happen in normal flow
+                    ( { model | errorMessage = Just "Please select language and category first" }
+                    , Cmd.none 
+                    )
         
         UpdateInput input ->
             ( { model 
@@ -104,7 +120,9 @@ update msg model =
         
         PlayAgain ->
             ( { model 
-            | currentScreen = DifficultySelection
+            | currentScreen = LanguageSelection
+            , selectedLanguage = Nothing
+            , selectedCategory = Nothing
             , selectedDifficulty = Nothing
             , currentWord = ""
             , guessedLetters = []
@@ -112,6 +130,7 @@ update msg model =
             , gameState = Playing
             , userInput = ""
             , errorMessage = Nothing
+            , wordList = []
             }
             , Cmd.none
             )
@@ -126,7 +145,14 @@ update msg model =
         
         WordSelected difficulty index ->
             let
-                selectedWord = getRandomWord difficulty index
+                selectedWord = 
+                    if List.isEmpty model.wordList then
+                        getRandomWord difficulty index  -- Fallback to old method
+                    else
+                        model.wordList
+                            |> List.drop index
+                            |> List.head
+                            |> Maybe.withDefault ""
             in
             ( { model 
             | currentScreen = Game
@@ -134,6 +160,42 @@ update msg model =
             }
             , Cmd.none
             )
+        
+        LoadWordList result ->
+            case result of
+                Ok csvContent ->
+                    let
+                        words = parseWordList csvContent
+                        wordCount = List.length words
+                    in
+                    if wordCount > 0 then
+                        ( { model 
+                        | wordList = words
+                        , guessedLetters = []
+                        , remainingGuesses = maxGuesses
+                        , gameState = Playing
+                        , userInput = ""
+                        , errorMessage = Nothing
+                        }
+                        , Random.generate (WordSelected (Maybe.withDefault Easy model.selectedDifficulty)) (Random.int 0 (wordCount - 1))
+                        )
+                    else
+                        ( { model | errorMessage = Just "No words found in the selected category" }
+                        , Cmd.none
+                        )
+                
+                Err error ->
+                    let
+                        errorMsg = case error of
+                            Http.BadUrl url -> "Bad URL: " ++ url
+                            Http.Timeout -> "Request timed out"
+                            Http.NetworkError -> "Network error - check if elm reactor is running"
+                            Http.BadStatus status -> "Bad status: " ++ String.fromInt status
+                            Http.BadBody bodyError -> "Bad response: " ++ bodyError
+                    in
+                    ( { model | errorMessage = Just ("Failed to load word list: " ++ errorMsg) }
+                    , Cmd.none
+                    )
 
 
 -- VIEW FUNCTIONS
@@ -148,9 +210,41 @@ viewStartScreen =
         ]
 
 
+-- Language selection screen view
+viewLanguageSelection : Html Msg
+viewLanguageSelection =
+    div [ class "screen language-screen" ]
+        [ h2 [ class "screen-title" ] [ text "Choose Language" ]
+        , div [ class "selection-buttons" ]
+            [ button [ class "selection-button", onClick (SelectLanguage English) ]
+                [ text "🇬🇧 English" ]
+            , button [ class "selection-button", onClick (SelectLanguage German) ]
+                [ text "🇩🇪 German" ]
+            , button [ class "selection-button", onClick (SelectLanguage Estonian) ]
+                [ text "🇪🇪 Estonian" ]
+            ]
+        ]
+
+
+-- Category selection screen view
+viewCategorySelection : Html Msg
+viewCategorySelection =
+    div [ class "screen category-screen" ]
+        [ h2 [ class "screen-title" ] [ text "Choose Category" ]
+        , div [ class "selection-buttons" ]
+            [ button [ class "selection-button", onClick (SelectCategory Animals) ]
+                [ text "🐾 Animals" ]
+            , button [ class "selection-button", onClick (SelectCategory Food) ]
+                [ text "🍔 Food & Drinks" ]
+            , button [ class "selection-button", onClick (SelectCategory Sport) ]
+                [ text "⚽ Sport" ]
+            ]
+        ]
+
+
 -- Difficulty selection screen view
-viewDifficultySelection : Html Msg
-viewDifficultySelection =
+viewDifficultySelection : Model -> Html Msg
+viewDifficultySelection model =
     div [ class "screen difficulty-screen" ]
         [ h2 [ class "screen-title" ] [ text "Choose Difficulty" ]
         , div [ class "difficulty-buttons" ]
@@ -167,6 +261,7 @@ viewDifficultySelection =
                 , p [ class "difficulty-description" ] [ text "9+ letter words" ]
                 ]
             ]
+        , viewErrorMessage model.errorMessage
         ]
 
 
@@ -239,8 +334,14 @@ view model =
             Start ->
                 viewStartScreen
             
+            LanguageSelection ->
+                viewLanguageSelection
+            
+            CategorySelection ->
+                viewCategorySelection
+            
             DifficultySelection ->
-                viewDifficultySelection
+                viewDifficultySelection model
             
             Game ->
                 viewGameScreen model

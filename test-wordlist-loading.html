@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Wordlist Loading</title>
+</head>
+<body>
+    <h1>Testing Wordlist Loading</h1>
+    <p>Click the button to test loading a wordlist file:</p>
+    <button onclick="testLoad()">Test Load english-animals-easy.csv</button>
+    <div id="result"></div>
+    
+    <script>
+    async function testLoad() {
+        const resultDiv = document.getElementById('result');
+        try {
+            const response = await fetch('src/wordlists/english-animals-easy.csv');
+            if (response.ok) {
+                const text = await response.text();
+                resultDiv.innerHTML = '<h3>Success!</h3><pre>' + text + '</pre>';
+            } else {
+                resultDiv.innerHTML = '<h3>Error: ' + response.status + ' ' + response.statusText + '</h3>';
+            }
+        } catch (error) {
+            resultDiv.innerHTML = '<h3>Error: ' + error.message + '</h3>';
+        }
+    }
+    </script>
+</body>
+</html>
