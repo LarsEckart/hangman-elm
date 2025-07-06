@@ -60,6 +60,7 @@ type alias Model =
     , userInput : UserInput
     , errorMessage : Maybe String
     , wordList : List String
+    , useEmbeddedWordLists : Bool
     }
 
 
@@ -76,6 +77,7 @@ type Msg
     | ClearError
     | WordSelected Difficulty Int
     | LoadWordList (Result Http.Error String)
+    | ToggleWordListSource
 
 
 -- Constants for game configuration
@@ -121,6 +123,7 @@ initialModel =
     , userInput = ""
     , errorMessage = Nothing
     , wordList = []
+    , useEmbeddedWordLists = False  -- Start with HTTP loading for safe migration
     }
 
 

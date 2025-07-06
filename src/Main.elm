@@ -10,6 +10,7 @@ import Types exposing (..)
 import GameLogic exposing (..)
 import Words exposing (getRandomWord, getWordsByDifficulty)
 import WordLoader exposing (loadWordList, parseWordList)
+import Generated.WordLists as EmbeddedWordLists
 
 
 -- Initialize the application model
@@ -49,12 +50,31 @@ update msg model =
         SelectDifficulty difficulty ->
             case (model.selectedLanguage, model.selectedCategory) of
                 (Just language, Just category) ->
-                    ( { model 
-                      | selectedDifficulty = Just difficulty
-                      , errorMessage = Just "Loading word list..."
-                      }
-                    , loadWordList language category difficulty
-                    )
+                    if model.useEmbeddedWordLists then
+                        -- Use embedded word lists - immediate word selection
+                        let
+                            availableWords = EmbeddedWordLists.getWordList language category difficulty
+                        in
+                        if List.isEmpty availableWords then
+                            ( { model | errorMessage = Just "No words available for this combination" }
+                            , Cmd.none
+                            )
+                        else
+                            ( { model 
+                              | selectedDifficulty = Just difficulty
+                              , wordList = availableWords
+                              , errorMessage = Nothing
+                              }
+                            , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
+                            )
+                    else
+                        -- Use HTTP loading (existing behavior)
+                        ( { model 
+                          | selectedDifficulty = Just difficulty
+                          , errorMessage = Just "Loading word list..."
+                          }
+                        , loadWordList language category difficulty
+                        )
                 _ ->
                     -- This shouldn't happen in normal flow
                     ( { model | errorMessage = Just "Please select language and category first" }
@@ -143,6 +163,18 @@ update msg model =
             , Cmd.none
             )
         
+        ToggleWordListSource ->
+            ( { model 
+              | useEmbeddedWordLists = not model.useEmbeddedWordLists
+              , errorMessage = 
+                  if model.useEmbeddedWordLists then
+                      Just "Switched to HTTP word loading"
+                  else
+                      Just "Switched to embedded word loading"
+              }
+            , Cmd.none
+            )
+        
         WordSelected difficulty index ->
             let
                 selectedWord = 
@@ -201,12 +233,25 @@ update msg model =
 -- VIEW FUNCTIONS
 
 -- Start screen view
-viewStartScreen : Html Msg
-viewStartScreen =
+viewStartScreen : Model -> Html Msg
+viewStartScreen model =
     div [ class "screen start-screen" ]
         [ h1 [ class "game-title" ] [ text "🎯 HANGMAN GAME" ]
         , p [ class "game-description" ] [ text "Guess the word letter by letter!" ]
         , button [ class "start-button", onClick StartGame ] [ text "Start Game" ]
+        , div [ class "development-controls" ]
+            [ p [ class "dev-label" ] [ text "Development Mode:" ]
+            , button 
+                [ class "toggle-button"
+                , onClick ToggleWordListSource
+                ] 
+                [ text 
+                    (if model.useEmbeddedWordLists then 
+                        "Using: Embedded Words" 
+                    else 
+                        "Using: HTTP Loading")
+                ]
+            ]
         ]
 
 
@@ -332,7 +377,7 @@ view model =
     div [ class "app" ]
         [ case model.currentScreen of
             Start ->
-                viewStartScreen
+                viewStartScreen model
             
             LanguageSelection ->
                 viewLanguageSelection
