@@ -380,7 +380,7 @@ viewGameOver model =
                 [ text (if model.gameState == Won then T.translate model.uiLanguage T.YouWon else T.translate model.uiLanguage T.YouLost) ]
             , div (applyStyles wordRevealStyles)
                 [ p (applyStyles wordLabelStyles) [ text (T.translate model.uiLanguage T.WordWas) ]
-                , h2 (applyStyles revealedWordStyles) [ text (String.toUpper model.currentWord) ]
+                , h2 (applyStyles revealedWordStyles) [ text model.currentWord ]
                 ]
             , div (applyStyles gameStatsStyles)
                 [ p [] [ text (T.translate model.uiLanguage T.GuessedLettersStats ++ formatGuessedLetters model.uiLanguage model.guessedLetters) ]
@@ -879,8 +879,8 @@ viewLetterButtons language currentWord guessedLetters gameState =
         makeButton : Char -> Html Msg
         makeButton letter =
             let
-                isGuessed = List.member (Char.toLower letter) guessedLetters
-                isInWord = isLetterInWord (Char.toLower letter) currentWord
+                isGuessed = List.member (Char.toUpper letter) guessedLetters
+                isInWord = isLetterInWord (Char.toUpper letter) currentWord
                 isDisabled = gameState /= Playing || isGuessed
                 
                 buttonStyle = 
@@ -894,7 +894,7 @@ viewLetterButtons language currentWord guessedLetters gameState =
             in
             button 
                 (applyStyles buttonStyle ++ 
-                [ onClick (GuessLetter (Char.toLower letter))
+                [ onClick (GuessLetter (Char.toUpper letter))
                 , disabled isDisabled
                 ])
                 [ text (String.fromChar letter) ]

@@ -136,7 +136,7 @@ wordListDB =
         const categoryEntries = CATEGORIES.map(category => {
             const difficultyEntries = DIFFICULTIES.map(difficulty => {
                 const words = wordLists[language][category][difficulty];
-                const wordList = words.map(word => `"${word}"`).join(', ');
+                const wordList = words.map(word => `"${word.toUpperCase()}"`).join(', ');
                 return `                    ("${difficulty}", [${wordList}])`;
             }).join('\n                , ');
 
