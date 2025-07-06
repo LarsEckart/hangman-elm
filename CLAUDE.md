@@ -66,6 +66,14 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 - `isGameWon`/`isGameLost`: Win/loss condition checks
 - `isValidGuess`: Input validation for single letters
 
+## Randomization System
+
+The game uses Elm's Random module for proper word selection:
+- `Browser.element` architecture supports commands for random generation
+- `WordSelected` message handles random word selection results
+- Random index generation ensures different words each game
+- Eliminates predictable behavior from fixed seed values
+
 ## Testing Strategy
 
 The test suite in `GameLogicTest.elm` covers:

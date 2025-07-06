@@ -1,186 +1,369 @@
-# Hangman Game Implementation Plan
+# Build-Time Word List Loading Implementation Plan
 
 ## Overview
-Implement a complete Hangman game in Elm using Test-Driven Development (TDD). The game will feature multiple difficulty levels, proper state management, and comprehensive test coverage.
+Transform the current runtime CSV file loading system into a build-time word list compilation system. This will eliminate HTTP requests, improve performance, and make the app fully self-contained.
 
-## Project Structure
+## Current State Analysis (Updated 2025-07-06)
+
+### ✅ **Fully Implemented Features**
+- **Complete UI Architecture**: 6-screen flow (Start → Language → Category → Difficulty → Game → GameOver)
+- **Multi-Language Support**: English, German, Estonian with 12 CSV files
+- **Category System**: Animals, Food, Sport categories per language
+- **Difficulty Levels**: Easy, Medium, Hard with length-based validation
+- **Dual Word Loading**: HTTP CSV loading + embedded fallback in `Words.elm`
+- **Game Logic**: Complete pure functions in `GameLogic.elm` with 157 tests
+- **Type System**: Comprehensive types in `Types.elm` with helper functions
+- **Error Handling**: HTTP failure handling with graceful fallbacks
+
+### ✅ **Current Modules**
+- `Main.elm`: Full Browser.element app with Model-View-Update pattern
+- `Types.elm`: Language/Category/Difficulty types + 12-field Model
+- `GameLogic.elm`: Pure game functions (tested, working)
+- `WordLoader.elm`: HTTP CSV loading with dynamic path generation
+- `Words.elm`: Embedded fallback word lists (English only)
+- `tests/GameLogicTest.elm`: 157 comprehensive tests (passing)
+- `tests/WordsTest.elm`: 27 tests for embedded lists (passing)
+- `tests/UpdateTest.elm`: Update function tests (⚠️ currently failing)
+
+### ❌ **Current Limitations**
+- Requires web server for CSV file serving (`elm reactor` or Python server)
+- Network dependency for primary word loading mechanism
+- Not self-contained (needs `src/wordlists/*.csv` files served)
+- Potential CORS issues in production deployments
+- Test failures in `UpdateTest.elm` need resolution
+
+## Target State
+- ✅ All word lists embedded in compiled Elm code
+- ✅ Zero network requests for word loading
+- ✅ Instant word loading (no async operations)
+- ✅ Self-contained HTML file
+- ✅ Maintains language/category/difficulty flexibility
+
+---
+
+## Phase 0: Prerequisites and Test Fixes
+**Goal**: Stabilize existing codebase before implementing build-time embedding
+
+### Step 0.1: Fix Failing Tests
+- [ ] Debug and fix `UpdateTest.elm` type mismatches
+- [ ] Ensure all existing tests pass before proceeding
+- [ ] Verify test infrastructure is working correctly
+
+### Step 0.2: Code Quality Validation
+- [ ] Run `elm-test` to confirm all tests pass
+- [ ] Check for any compiler warnings or errors
+- [ ] Validate current CSV file structure and content
+
+### Step 0.3: Baseline Documentation
+- [ ] Document current architecture in CLAUDE.md
+- [ ] Record current file structure and dependencies
+- [ ] Establish performance baseline measurements
+
+---
+
+## Phase 1: Build Script Development
+**Goal**: Create Node.js build script to process CSV files and generate Elm code
+
+### Step 1.1: Create CSV Reader Script
+- [ ] Create `scripts/build-wordlists.js`
+- [ ] Implement CSV file discovery in `src/wordlists/` (12 existing files)
+- [ ] Parse CSV files into structured data (simple format: one word per line)
+- [ ] Validate word lists (length requirements per difficulty: Easy 3-5, Medium 6-8, Hard 9+)
+- [ ] Handle missing CSV files gracefully with warnings
+
+### Step 1.2: Elm Code Generation
+- [ ] Generate optimized lookup structure for 3-dimensional access (Language → Category → Difficulty)
+- [ ] Create `getWordList : Language -> Category -> Difficulty -> List String` function
+- [ ] Generate fallback handling for missing combinations
+- [ ] Output to `src/Generated/WordLists.elm` with proper imports
+- [ ] Ensure generated code passes `elm make` compilation
+- [ ] Include word count validation in generated code
+
+### Step 1.3: Build Integration
+- [ ] Add npm scripts for build process
+- [ ] Integrate with existing compilation workflow
+- [ ] Add generated files to `.gitignore`
+
+---
+
+## Phase 2: Feature Flag Implementation
+**Goal**: Add toggle between HTTP and embedded word lists for safe migration
+
+### Step 2.1: Add Feature Flag System
+- [ ] Add `useEmbeddedWordLists : Bool` flag to Model
+- [ ] Create configuration system for build-time vs runtime loading
+- [ ] Add UI toggle for testing both systems (development only)
+
+### Step 2.2: Implement Embedded Word Loading Path
+- [ ] Import `Generated.WordLists` module in Main.elm
+- [ ] Create `loadEmbeddedWords` function for immediate word selection
+- [ ] Update `SelectDifficulty` message to handle both paths
+- [ ] Maintain existing HTTP path as fallback
+
+### Step 2.3: Parallel System Validation
+- [ ] Add validation that both systems return equivalent results
+- [ ] Create development mode comparison testing
+- [ ] Ensure random seed consistency between systems
+
+---
+
+## Phase 3: Full Migration to Embedded System
+**Goal**: Complete transition to embedded word lists and remove HTTP dependencies
+
+### Step 3.1: Production Flag Switch
+- [ ] Set `useEmbeddedWordLists = True` as default
+- [ ] Remove development UI toggle
+- [ ] Validate all 27 language/category/difficulty combinations work
+
+### Step 3.2: HTTP System Removal
+- [ ] Remove `WordLoader.elm` module
+- [ ] Remove `Http` imports from `Main.elm` and `Types.elm`
+- [ ] Remove `LoadWordList` message and HTTP error handling
+- [ ] Remove `wordList` field from Model (replaced by immediate lookup)
+
+### Step 3.3: Code Simplification
+- [ ] Simplify message flow (no async word loading)
+- [ ] Update `SelectDifficulty` handler for immediate word selection
+- [ ] Remove HTTP-related error states and loading indicators
+- [ ] Update `Words.elm` to use generated lists or remove entirely
+
+---
+
+## Phase 4: Build Process Automation
+**Goal**: Streamline the development and build workflow
+
+### Step 4.1: Development Scripts
+- [ ] `npm run build-wordlists` - Generate word lists
+- [ ] `npm run dev` - Build wordlists + elm reactor
+- [ ] `npm run build` - Full production build
+
+### Step 4.2: Watch Mode (Optional)
+- [ ] Auto-regenerate on CSV file changes
+- [ ] Integrate with development workflow
+- [ ] Hot reload support
+
+### Step 4.3: Documentation
+- [ ] Update README with new build process
+- [ ] Document CSV file format requirements
+- [ ] Add troubleshooting guide
+
+---
+
+## Phase 5: Testing and Validation
+**Goal**: Ensure reliability and maintain test coverage
+
+### Step 5.1: Generated Code Testing
+- [ ] Unit tests for word list lookup functions
+- [ ] Validate generated Elm code syntax
+- [ ] Test edge cases (empty lists, missing files)
+
+### Step 5.2: Integration Testing
+- [ ] Test complete game flow with generated word lists
+- [ ] Verify all language/category combinations
+- [ ] Performance testing (load times, memory usage)
+
+### Step 5.3: Regression Testing
+- [ ] Ensure existing game logic still works
+- [ ] Verify randomization quality
+- [ ] Test UI responsiveness
+
+---
+
+## Phase 6: Cleanup and Optimization
+**Goal**: Remove legacy code and optimize the implementation
+
+### Step 6.1: Legacy Code Removal
+- [ ] Remove CSV files from `src/wordlists/` (move to `data/`)
+- [ ] Clean up unused imports and functions
+- [ ] Remove HTTP-related error handling
+
+### Step 6.2: Performance Optimization
+- [ ] Optimize generated code size
+- [ ] Consider word list compression techniques
+- [ ] Bundle size analysis
+
+### Step 6.3: Final Documentation
+- [ ] Complete README update
+- [ ] Add build process documentation
+- [ ] Update CLAUDE.md with new architecture
+
+---
+
+## Implementation Details
+
+### Generated Elm Module Structure (Updated)
+```elm
+module Generated.WordLists exposing (..)
+
+import Dict exposing (Dict)
+import Types exposing (Language(..), Category(..), Difficulty(..))
+
+-- Optimized 3-dimensional lookup structure
+type alias WordListDB = Dict String (Dict String (Dict String (List String)))
+
+-- Generated word database: language -> category -> difficulty -> word list
+wordListDB : WordListDB
+
+-- Primary lookup function
+getWordList : Language -> Category -> Difficulty -> List String
+
+-- Helper functions for key generation
+languageToString : Language -> String
+categoryToString : Category -> String
+difficultyToString : Difficulty -> String
+
+-- Fallback and validation
+getAvailableCombinations : List (Language, Category, Difficulty)
+validateWordList : List String -> Difficulty -> Bool
+```
+
+### Build Script Output Example (Updated)
+```elm
+-- Generated by build-wordlists.js on 2025-07-06
+-- Do not edit manually - regenerate with: npm run build-wordlists
+
+module Generated.WordLists exposing (..)
+
+import Dict exposing (Dict)
+import Types exposing (Language(..), Category(..), Difficulty(..))
+
+-- 3-dimensional nested Dict structure for efficient lookup
+wordListDB : Dict String (Dict String (Dict String (List String)))
+wordListDB = 
+    Dict.fromList
+        [ ("english", Dict.fromList
+            [ ("animals", Dict.fromList
+                [ ("easy", ["cat", "dog", "pig", "cow", "hen"])
+                , ("medium", ["rabbit", "turtle", "chicken"])
+                , ("hard", ["elephant", "kangaroo", "rhinoceros"])
+                ])
+            , ("food", Dict.fromList [...])
+            , ("sport", Dict.fromList [...])
+            ])
+        , ("german", Dict.fromList [...])
+        , ("estonian", Dict.fromList [...])
+        ]
+
+getWordList : Language -> Category -> Difficulty -> List String
+getWordList language category difficulty =
+    wordListDB
+        |> Dict.get (languageToString language)
+        |> Maybe.andThen (Dict.get (categoryToString category))
+        |> Maybe.andThen (Dict.get (difficultyToString difficulty))
+        |> Maybe.withDefault []
+```
+
+### Package.json Scripts
+```json
+{
+  "scripts": {
+    "build-wordlists": "node scripts/build-wordlists.js",
+    "dev": "npm run build-wordlists && elm reactor",
+    "build": "npm run build-wordlists && elm make src/Main.elm --output=dist/index.html",
+    "watch": "nodemon --watch src/wordlists --exec 'npm run build-wordlists'"
+  }
+}
+```
+
+---
+
+## Benefits of This Approach
+
+### Performance Benefits
+- ✅ Zero network requests for word loading
+- ✅ Instant word availability
+- ✅ No loading states or error handling needed
+- ✅ Smaller runtime complexity
+
+### Development Benefits  
+- ✅ Self-contained builds
+- ✅ No web server required for development
+- ✅ Easier deployment (single HTML file)
+- ✅ No CORS issues
+
+### Maintenance Benefits
+- ✅ Build-time validation of word lists
+- ✅ Type-safe word list access
+- ✅ Centralized word list management
+- ✅ Easy to add new languages/categories
+
+---
+
+## Migration Strategy (Updated)
+
+1. **Prerequisite Phase**: Fix failing tests and establish stable baseline
+2. **Build Infrastructure**: Create generation scripts and validate output
+3. **Feature Flag Implementation**: Add parallel systems with toggle capability
+4. **Validation Phase**: Ensure feature parity between HTTP and embedded systems
+5. **Production Switch**: Default to embedded with HTTP fallback
+6. **Legacy Removal**: Remove HTTP code after confidence period
+7. **Optimization**: Code cleanup and performance improvements
+
+### Risk Mitigation
+- **Rollback capability**: Keep HTTP system until embedded is proven
+- **Gradual deployment**: Feature flag allows safe testing
+- **Validation**: Compare outputs between systems during transition
+- **Test coverage**: Maintain comprehensive test suite throughout migration
+
+---
+
+## File Structure After Implementation
+
 ```
 hangman-elm/
 ├── src/
-│   ├── Main.elm          # Entry point and main view
-│   ├── Types.elm         # Type definitions
-│   ├── Game.elm          # Core game logic (pure functions)
-│   └── Words.elm         # Word lists by difficulty
+│   ├── Main.elm              # Updated for embedded word lists (no HTTP imports)
+│   ├── Types.elm             # Simplified (removed HTTP-related types)
+│   ├── GameLogic.elm         # Unchanged (pure functions)
+│   ├── Words.elm             # Removed or updated to use Generated module
+│   ├── wordlists/            # Original CSV files (12 files)
+│   │   ├── english-animals-easy.csv
+│   │   ├── english-animals-medium.csv
+│   │   ├── english-animals-hard.csv
+│   │   ├── german-animals-easy.csv
+│   │   ├── estonian-animals-easy.csv
+│   │   └── ... (7 more CSV files)
+│   └── Generated/            # Auto-generated (gitignored)
+│       └── WordLists.elm     # Generated word lists module
 ├── tests/
-│   ├── GameTest.elm      # Core logic tests
-│   └── UpdateTest.elm    # Update function tests
-├── elm.json             # Project configuration
-└── README.md            # Usage instructions
+│   ├── GameLogicTest.elm     # Existing (157 tests)
+│   ├── WordsTest.elm         # Existing (27 tests)
+│   ├── UpdateTest.elm        # Fixed and updated
+│   └── GeneratedWordListsTest.elm # New tests for generated module
+├── scripts/
+│   └── build-wordlists.js    # Build script
+├── package.json              # Updated with build scripts
+├── elm.json                  # Removed elm/http dependency
+├── .gitignore                # Added src/Generated/
+└── CLAUDE.md                 # Updated with new architecture
 ```
 
-## Implementation Phases
+---
 
-### Phase 1: Project Setup
-- [x] Initialize Elm project with `elm init`
-- [x] Install elm-test: `npm install -g elm-test`
-- [x] Configure elm.json for testing
-- [x] Create initial directory structure
+## Success Criteria (Updated)
 
-### Phase 2: Type Definitions (Types.elm)
-- [x] Define `GameScreen` type (Start, DifficultySelection, Game, GameOver)
-- [x] Define `Difficulty` type (Easy, Medium, Hard)
-- [x] Define `GameState` type (Playing, Won, Lost)
-- [x] Define `Model` type with all necessary fields
-- [x] Define `Msg` type for all user interactions
-- [x] Create type aliases for clarity
+### **Primary Goals**
+- [ ] All 12 CSV word lists embedded at build time
+- [ ] Zero HTTP requests during gameplay (fully self-contained)
+- [ ] Maintains complete language/category/difficulty functionality (3×3×3 = 27 combinations)
+- [ ] Self-contained HTML output (works without web server)
+- [ ] All existing tests pass (157 GameLogic + 27 Words + fixed Update tests)
 
-### Phase 3: Core Game Logic (Game.elm) - TDD Approach
+### **Quality Assurance**
+- [ ] Build process integrated into development workflow
+- [ ] Generated code passes elm-make compilation
+- [ ] Performance maintained or improved (instant word loading)
+- [ ] Word length validation preserved for all difficulty levels
+- [ ] Random word selection quality maintained
 
-#### 3.1: Letter Validation Functions
-- [x] **Write tests first** for `isLetterInWord`
-  - Test letter exists in word
-  - Test letter doesn't exist
-  - Test case insensitivity
-- [x] **Implement** `isLetterInWord : Char -> String -> Bool`
-- [x] **Write tests first** for `isValidGuess`
-  - Test single letter input
-  - Test already guessed letters
-  - Test invalid characters
-- [x] **Implement** `isValidGuess : Char -> List Char -> Bool`
+### **Development Experience**
+- [ ] `npm run dev` builds word lists + starts elm reactor
+- [ ] `npm run build` creates production-ready self-contained HTML
+- [ ] Documentation updated in CLAUDE.md and README
+- [ ] Clear rollback path if issues arise
 
-#### 3.2: Word Display Functions
-- [x] **Write tests first** for `getMaskedWord`
-  - Test no letters guessed (all underscores)
-  - Test some letters guessed
-  - Test all letters guessed
-  - Test case insensitivity
-- [x] **Implement** `getMaskedWord : String -> List Char -> String`
-
-#### 3.3: Game State Management
-- [x] **Write tests first** for `updateGuessedLetters`
-  - Test adding new letter
-  - Test not adding duplicate
-- [x] **Implement** `updateGuessedLetters : Char -> List Char -> List Char`
-- [x] **Write tests first** for `calculateRemainingGuesses`
-  - Test correct guesses don't decrement
-  - Test wrong guesses decrement
-- [x] **Implement** `calculateRemainingGuesses : String -> List Char -> Int -> Int`
-
-#### 3.4: Win/Loss Conditions
-- [x] **Write tests first** for `isGameWon`
-  - Test all letters guessed
-  - Test missing letters
-- [x] **Implement** `isGameWon : String -> List Char -> Bool`
-- [x] **Write tests first** for `isGameLost`
-  - Test remaining guesses > 0
-  - Test remaining guesses = 0
-- [x] **Implement** `isGameLost : Int -> Bool`
-
-### Phase 4: Word Lists (Words.elm)
-- [x] Create word lists for each difficulty
-  - Easy: 3-5 letter words (20+ words)
-  - Medium: 6-8 letter words (20+ words)
-  - Hard: 9+ letter words (20+ words)
-- [x] **Write tests first** for `getRandomWord`
-  - Test returns word from correct difficulty
-  - Test word length matches difficulty
-- [x] **Implement** `getRandomWord : Difficulty -> Int -> String`
-- [x] **Write tests first** for `getWordsByDifficulty`
-- [x] **Implement** `getWordsByDifficulty : Difficulty -> List String`
-
-### Phase 5: Update Logic (Main.elm) - TDD Approach
-- [x] **Write tests first** for update function
-  - Test StartGame message
-  - Test SelectDifficulty message
-  - Test GuessLetter message (valid/invalid)
-  - Test PlayAgain message
-  - Test screen transitions
-- [x] **Implement** `update : Msg -> Model -> Model`
-- [x] **Write tests first** for model initialization
-- [x] **Implement** `init : Model`
-
-### Phase 6: View Implementation (Main.elm)
-- [x] **Implement** `viewStartScreen : Html Msg`
-  - Game title
-  - Start button
-- [x] **Implement** `viewDifficultySelection : Html Msg`
-  - Three difficulty buttons
-  - Clear descriptions
-- [x] **Implement** `viewGameScreen : Model -> Html Msg`
-  - Masked word display
-  - Guessed letters display
-  - Remaining guesses counter
-  - Letter input field
-  - Guess button
-  - Game status messages
-- [x] **Implement** `viewGameOver : Model -> Html Msg`
-  - Win/loss message
-  - Reveal word if lost
-  - Play again button
-- [x] **Implement** main `view : Model -> Html Msg`
-
-### Phase 7: Integration and Testing
-- [x] Run all tests and ensure they pass
-- [x] Manual testing of complete game flow
-- [x] Test all edge cases
-- [x] Verify proper error handling
-
-### Phase 8: Documentation and Polish
-- [x] Update README.md with:
-  - How to run the game
-  - How to run tests
-  - Game rules and features
-- [x] Code cleanup and refactoring
-- [x] Final test run
-
-## Test Cases Checklist
-
-### Core Logic Tests (GameTest.elm)
-- [ ] `isLetterInWord` tests (3+ test cases)
-- [ ] `isValidGuess` tests (3+ test cases)
-- [ ] `getMaskedWord` tests (4+ test cases)
-- [ ] `updateGuessedLetters` tests (2+ test cases)
-- [ ] `calculateRemainingGuesses` tests (2+ test cases)
-- [ ] `isGameWon` tests (2+ test cases)
-- [ ] `isGameLost` tests (2+ test cases)
-
-### Update Function Tests (UpdateTest.elm)
-- [ ] Screen transition tests (4+ test cases)
-- [ ] Game state update tests (3+ test cases)
-- [ ] Input validation tests (2+ test cases)
-- [ ] Win/loss condition tests (2+ test cases)
-
-### Word Management Tests
-- [ ] `getRandomWord` tests (3+ test cases)
-- [ ] `getWordsByDifficulty` tests (3+ test cases)
-- [ ] Word length validation tests (3+ test cases)
-
-## Commands to Remember
-```bash
-# Initialize project
-elm init
-
-# Install elm-test
-npm install -g elm-test
-
-# Run tests
-elm-test
-
-# Run application
-elm reactor
-```
-
-## Success Criteria
-- [x] All tests pass (67/67 tests passing)
-- [x] Game functions correctly through all screens
-- [x] Proper input validation
-- [x] Win/loss conditions work correctly
-- [x] Clean, testable code architecture
-- [x] Complete documentation
-
-## Notes
-- Follow TDD strictly: Write tests first, then implement
-- Keep pure functions separate from view logic
-- Use descriptive test names
-- Test both happy path and edge cases
-- Ensure all user interactions are properly handled
+### **Validation Criteria**
+- [ ] All 27 language/category/difficulty combinations tested
+- [ ] Generated word lists match CSV file contents exactly
+- [ ] Game behavior identical between HTTP and embedded systems
+- [ ] Build process handles missing CSV files gracefully
