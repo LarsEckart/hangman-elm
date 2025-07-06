@@ -24,7 +24,39 @@ wordLength : Word -> Int
 wordLength (Word str) =
     String.length str
 
-type alias GuessedLetters = List Char
+-- Opaque type for GuessedLetters to ensure type safety and guarantee uppercase
+type GuessedLetters = GuessedLetters (List Char)
+
+-- Helper functions for GuessedLetters opaque type
+emptyGuessedLetters : GuessedLetters
+emptyGuessedLetters =
+    GuessedLetters []
+
+guessedLettersFromList : List Char -> GuessedLetters
+guessedLettersFromList chars =
+    GuessedLetters (List.map Char.toUpper chars)
+
+guessedLettersToList : GuessedLetters -> List Char
+guessedLettersToList (GuessedLetters chars) =
+    chars
+
+addGuessedLetter : Char -> GuessedLetters -> GuessedLetters
+addGuessedLetter letter (GuessedLetters chars) =
+    let
+        upperLetter = Char.toUpper letter
+    in
+    if List.member upperLetter chars then
+        GuessedLetters chars
+    else
+        GuessedLetters (chars ++ [upperLetter])
+
+isLetterGuessed : Char -> GuessedLetters -> Bool
+isLetterGuessed letter (GuessedLetters chars) =
+    List.member (Char.toUpper letter) chars
+
+guessedLettersLength : GuessedLetters -> Int
+guessedLettersLength (GuessedLetters chars) =
+    List.length chars
 type alias RemainingGuesses = Int
 type alias UserInput = String
 
@@ -213,7 +245,7 @@ errorToString uiLanguage error =
 
 
 -- Helper function to validate user input and return appropriate error
-validateUserInput : String -> List Char -> Result AppError Char
+validateUserInput : String -> GuessedLetters -> Result AppError Char
 validateUserInput input guessedLetters =
     case String.toList input of
         [] ->
@@ -222,7 +254,7 @@ validateUserInput input guessedLetters =
         [char] ->
             if not (Char.isAlpha char) then
                 Err (InvalidGuess (NonAlphabetic input))
-            else if List.member (Char.toUpper char) guessedLetters then
+            else if isLetterGuessed char guessedLetters then
                 Err (InvalidGuess (AlreadyGuessed char))
             else
                 Ok char
@@ -236,7 +268,7 @@ resetGame : Model -> Model
 resetGame model =
     { model
     | currentWord = wordFromString ""
-    , guessedLetters = []
+    , guessedLetters = emptyGuessedLetters
     , remainingGuesses = maxGuesses
     , gameState = Playing
     , userInput = ""
@@ -254,7 +286,7 @@ initialModel =
     , selectedCategory = Nothing
     , selectedDifficulty = Nothing
     , currentWord = wordFromString ""
-    , guessedLetters = []
+    , guessedLetters = emptyGuessedLetters
     , remainingGuesses = maxGuesses
     , gameState = Playing
     , userInput = ""
