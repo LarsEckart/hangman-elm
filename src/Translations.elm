@@ -23,6 +23,7 @@ type TranslationKey
     | Hard
     | HardDescription
     | Hangman
+    | CategoryLabel
     | DifficultyLabel
     | RemainingGuesses
     | GuessedLetters
@@ -82,6 +83,7 @@ translateEnglish key =
         Hard -> "Hard"
         HardDescription -> "9+ letter words"
         Hangman -> "Hangman"
+        CategoryLabel -> "Category: "
         DifficultyLabel -> "Difficulty: "
         RemainingGuesses -> "Remaining guesses: "
         GuessedLetters -> "Guessed letters:"
@@ -128,6 +130,7 @@ translateGerman key =
         Hard -> "Schwer"
         HardDescription -> "9+ Buchstaben"
         Hangman -> "Galgenmännchen"
+        CategoryLabel -> "Kategorie: "
         DifficultyLabel -> "Schwierigkeit: "
         RemainingGuesses -> "Verbleibende Versuche: "
         GuessedLetters -> "Geratene Buchstaben:"
@@ -174,6 +177,7 @@ translateEstonian key =
         Hard -> "Raske"
         HardDescription -> "9+ tähte"
         Hangman -> "Poomismäng"
+        CategoryLabel -> "Kategooria: "
         DifficultyLabel -> "Raskusaste: "
         RemainingGuesses -> "Järelejäänud katsed: "
         GuessedLetters -> "Arvatud tähed:"

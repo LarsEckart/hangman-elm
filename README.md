@@ -1,5 +1,7 @@
 # Hangman Game - Elm Implementation
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c7779d1b-b353-48bd-94ca-337c7c19fc92/deploy-status)](https://app.netlify.com/sites/hangman-claudecode/deploys)
+
 A classic Hangman word-guessing game built with Elm featuring **build-time embedded word lists** for zero-dependency, self-contained gameplay. Built using Test-Driven Development (TDD) principles with 53 comprehensive tests.
 
 **🌐 Play Online**: https://hangman-claudecode.netlify.app/
@@ -53,6 +55,8 @@ This builds the embedded word lists and starts elm reactor at http://localhost:8
 #### Production Build
 ```bash
 npm run build
+# or use the build script:
+./build_project.sh
 ```
 Creates `dist/index.html` with embedded word lists - fully self-contained!
 
