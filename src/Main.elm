@@ -353,7 +353,7 @@ viewGameScreen model =
             [ h1 (applyStyles maskedWordStyles) [ text (formatMaskedWord (getMaskedWord model.currentWord model.guessedLetters)) ]
             ]
         , div (applyStyles letterButtonsContainerStyles)
-            (viewLetterButtons model.currentWord model.guessedLetters model.gameState)
+            (viewLetterButtons (Maybe.withDefault English model.selectedLanguage) model.currentWord model.guessedLetters model.gameState)
         , viewErrorMessage model.uiLanguage model.errorMessage
         ]
 
@@ -723,10 +723,10 @@ clearErrorButtonStyles =
 letterButtonsContainerStyles : List (String, String)
 letterButtonsContainerStyles = 
     [ ("display", "grid")
-    , ("grid-template-columns", "repeat(auto-fit, minmax(40px, 1fr))")
-    , ("gap", "8px")
+    , ("grid-template-columns", "repeat(auto-fill, minmax(38px, 1fr))")
+    , ("gap", "6px")
     , ("margin", "20px 0")
-    , ("padding", "15px")
+    , ("padding", "12px")
     , ("background", "#f8f9fa")
     , ("border-radius", "8px")
     , ("border", "1px solid #e9ecef")
@@ -740,13 +740,13 @@ letterButtonStyles =
     , ("color", "#333")
     , ("border", "2px solid #ddd")
     , ("border-radius", "6px")
-    , ("padding", "8px")
-    , ("font-size", "1rem")
+    , ("padding", "6px")
+    , ("font-size", "0.95rem")
     , ("font-weight", "600")
     , ("cursor", "pointer")
     , ("transition", "all 0.2s ease")
-    , ("min-width", "40px")
-    , ("min-height", "40px")
+    , ("min-width", "38px")
+    , ("min-height", "38px")
     , ("display", "flex")
     , ("align-items", "center")
     , ("justify-content", "center")
@@ -843,11 +843,25 @@ validateGuess input guessedLetters =
     validateUserInput input guessedLetters
 
 
+-- Get alphabet for specific language
+getAlphabetForLanguage : Language -> String
+getAlphabetForLanguage language =
+    case language of
+        English ->
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        
+        German ->
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß"
+        
+        Estonian ->
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜÕŠŽ"
+
+
 -- Generate letter buttons for the alphabet
-viewLetterButtons : String -> List Char -> GameState -> List (Html Msg)
-viewLetterButtons currentWord guessedLetters gameState =
+viewLetterButtons : Language -> String -> List Char -> GameState -> List (Html Msg)
+viewLetterButtons language currentWord guessedLetters gameState =
     let
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        alphabet = getAlphabetForLanguage language
             |> String.toList
         
         makeButton : Char -> Html Msg
