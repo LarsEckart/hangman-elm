@@ -86,6 +86,7 @@ type Msg
     | SelectDifficulty Difficulty
     | UpdateInput String
     | MakeGuess
+    | GuessLetter Char
     | PlayAgain
     | BackToStart
     | ClearError
