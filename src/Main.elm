@@ -770,7 +770,6 @@ letterButtonWrongStyles =
     [ ("background", "#ffebee")
     , ("color", "#f44336")
     , ("border-color", "#f44336")
-    , ("text-decoration", "line-through")
     , ("cursor", "not-allowed")
     , ("opacity", "0.6")
     ]
