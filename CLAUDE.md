@@ -90,8 +90,9 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 
 **NPM Scripts**:
 - `npm run build-wordlists`: Generate embedded word lists
+- `npm run build-sw`: Generate service worker with automatic versioning
 - `npm run dev`: Build + start elm reactor
-- `npm run build`: Build + create production HTML
+- `npm run build`: Build + create production HTML with offline support
 - `npm run test`: Run elm-test suite
 
 ## Testing Strategy ✅ **COMPLETED**
@@ -113,6 +114,29 @@ All game logic is implemented as pure functions in `GameLogic.elm`:
 
 See `plan.md` for detailed implementation history.
 
+## Offline Functionality ✅ **COMPLETED**
+
+The game includes full offline support via Service Worker:
+
+- **Service Worker**: Minimal JavaScript for offline caching (`sw-template.js`)
+- **Automatic Versioning**: Version injected from `package.json` at build time
+- **Cache Management**: Automatic cleanup of old cached versions
+- **Offline Play**: Complete game functionality without internet after first visit
+
+### Build System Files
+- **`sw-template.js`**: Service Worker template with version placeholder
+- **`scripts/build-sw.js`**: Build script that injects version from package.json
+- **`scripts/add-viewport.js`**: Enhanced to add Service Worker registration to HTML
+
+### ⚠️ **IMPORTANT: VERSION MANAGEMENT**
+**Any change you make, think about if it is minor or patch level and bump the version in `package.json` - we don't want to forget this, ever!**
+
+- **Patch** (`1.0.0` → `1.0.1`): Bug fixes, small UI tweaks
+- **Minor** (`1.0.1` → `1.1.0`): New features, significant improvements  
+- **Major** (`1.1.0` → `2.0.0`): Breaking changes, major redesign
+
+Use: `npm version patch` or `npm version minor` or `npm version major`
+
 ## Key Design Principles
 
 - **Pure Functions**: All game logic is implemented as pure functions for testability
@@ -121,3 +145,4 @@ See `plan.md` for detailed implementation history.
 - **Test Coverage**: Every function has comprehensive test coverage before implementation
 - **Separation of Concerns**: Clear boundaries between logic, state, and view layers
 - **Internationalization**: Type-safe translation system with complete UI localization
+- **Offline First**: Service Worker caching for reliable offline functionality

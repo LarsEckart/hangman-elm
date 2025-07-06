@@ -4,8 +4,9 @@
   "description": "A Hangman game implementation in Elm with multi-language support",
   "scripts": {
     "build-wordlists": "node scripts/build-wordlists.js",
+    "build-sw": "node scripts/build-sw.js",
     "dev": "npm run build-wordlists && elm reactor",
-    "build": "npm run build-wordlists && elm make src/Main.elm --output=dist/index.html && node scripts/add-viewport.js",
+    "build": "npm run build-wordlists && npm run build-sw && elm make src/Main.elm --output=dist/index.html && node scripts/add-viewport.js",
     "test": "elm-test",
     "watch": "nodemon --watch src/wordlists --ext csv --exec 'npm run build-wordlists'"
   },
