@@ -48,7 +48,7 @@ suite =
             , test "clears error message when starting game" <|
                 \_ ->
                     let
-                        modelWithError = { initialModel | errorMessage = Just "Previous error" }
+                        modelWithError = { initialModel | errorMessage = Just (GameStateError "Previous error") }
                         updatedModel = updateModel StartGame modelWithError
                     in
                     Expect.equal updatedModel.errorMessage Nothing
@@ -82,7 +82,7 @@ suite =
                             }
                         updatedModel = updateModel (SelectDifficulty Easy) modelWithoutLanguage
                     in
-                    Expect.equal updatedModel.errorMessage (Just "Please select language and category first")
+                    Expect.equal updatedModel.errorMessage (Just (SelectionIncomplete { missingLanguage = True, missingCategory = False }))
             
             , test "shows error when category not selected" <|
                 \_ ->
@@ -94,7 +94,7 @@ suite =
                             }
                         updatedModel = updateModel (SelectDifficulty Easy) modelWithoutCategory
                     in
-                    Expect.equal updatedModel.errorMessage (Just "Please select language and category first")
+                    Expect.equal updatedModel.errorMessage (Just (SelectionIncomplete { missingLanguage = False, missingCategory = True }))
             ]
         , describe "UpdateInput message"
             [ test "updates user input field" <|
@@ -107,7 +107,7 @@ suite =
             , test "clears error message when updating input" <|
                 \_ ->
                     let
-                        modelWithError = { initialModel | errorMessage = Just "Previous error" }
+                        modelWithError = { initialModel | errorMessage = Just (GameStateError "Previous error") }
                         updatedModel = updateModel (UpdateInput "b") modelWithError
                     in
                     Expect.equal updatedModel.errorMessage Nothing
@@ -356,7 +356,7 @@ suite =
                     let
                         modelWithError = 
                             { initialModel 
-                            | errorMessage = Just "Test error"
+                            | errorMessage = Just (GameStateError "Test error")
                             , currentScreen = Game
                             , currentWord = "cat"
                             }

@@ -7,6 +7,22 @@ type alias RemainingGuesses = Int
 type alias UserInput = String
 
 
+-- Structured error type for better error categorization and type safety
+type AppError
+    = NoWordsAvailable Language Category Difficulty
+    | SelectionIncomplete { missingLanguage : Bool, missingCategory : Bool }
+    | InvalidGuess GuessError
+    | GameStateError String
+
+
+-- Specific guess validation errors
+type GuessError
+    = EmptyInput
+    | MultipleCharacters String
+    | NonAlphabetic String
+    | AlreadyGuessed Char
+
+
 -- Screen/UI state management
 type GameScreen
     = Start
@@ -56,7 +72,7 @@ type alias Model =
     , remainingGuesses : RemainingGuesses
     , gameState : GameState
     , userInput : UserInput
-    , errorMessage : Maybe String
+    , errorMessage : Maybe AppError
     , wordList : List String
     }
 
@@ -102,6 +118,72 @@ isValidWordForDifficulty word difficulty =
         { min, max } = getDifficultyWordLength difficulty
     in
     wordLength >= min && wordLength <= max
+
+
+-- Helper functions for error handling
+errorToString : AppError -> String
+errorToString error =
+    case error of
+        NoWordsAvailable language category difficulty ->
+            "No words available for " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
+        
+        SelectionIncomplete { missingLanguage, missingCategory } ->
+            if missingLanguage && missingCategory then
+                "Please select language and category first"
+            else if missingLanguage then
+                "Please select a language first"
+            else
+                "Please select a category first"
+        
+        InvalidGuess guessError ->
+            case guessError of
+                EmptyInput ->
+                    "Please enter a letter"
+                
+                MultipleCharacters input ->
+                    "Please enter only one letter"
+                
+                NonAlphabetic input ->
+                    "Please enter only letters"
+                
+                AlreadyGuessed char ->
+                    "You already guessed that letter"
+        
+        GameStateError message ->
+            "Game error: " ++ message
+
+
+-- Helper function to validate user input and return appropriate error
+validateUserInput : String -> List Char -> Result AppError Char
+validateUserInput input guessedLetters =
+    case String.toList input of
+        [] ->
+            Err (InvalidGuess EmptyInput)
+        
+        [char] ->
+            if not (Char.isAlpha char) then
+                Err (InvalidGuess (NonAlphabetic input))
+            else if List.member (Char.toLower char) guessedLetters then
+                Err (InvalidGuess (AlreadyGuessed char))
+            else
+                Ok char
+        
+        _ ->
+            Err (InvalidGuess (MultipleCharacters input))
+
+
+-- Reset game-specific fields while preserving user selections
+resetGame : Model -> Model
+resetGame model =
+    { model
+    | currentWord = ""
+    , guessedLetters = []
+    , remainingGuesses = maxGuesses
+    , gameState = Playing
+    , userInput = ""
+    , errorMessage = Nothing
+    , wordList = []
+    }
 
 
 -- Initial model state
