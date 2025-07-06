@@ -5,7 +5,7 @@
   "scripts": {
     "build-wordlists": "node scripts/build-wordlists.js",
     "dev": "npm run build-wordlists && elm reactor",
-    "build": "npm run build-wordlists && elm make src/Main.elm --output=dist/index.html && node scripts/build-mobile-responsive.js",
+    "build": "npm run build-wordlists && elm make src/Main.elm --output=dist/elm.js && cp src/index.html dist/index.html",
     "test": "elm-test",
     "watch": "nodemon --watch src/wordlists --ext csv --exec 'npm run build-wordlists'"
   },

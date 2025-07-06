@@ -2,7 +2,7 @@ module Main exposing (main, update, init)
 
 import Browser
 import Html exposing (Html, div, h1, h2, p, button, input, text, span)
-import Html.Attributes exposing (class, type_, value, placeholder, disabled)
+import Html.Attributes exposing (class, type_, value, placeholder, disabled, style)
 import Html.Events exposing (onClick, onInput)
 import Random
 import Types exposing (..)
@@ -233,22 +233,22 @@ handleWordSelected difficulty index model =
 -- Start screen view
 viewStartScreen : Html Msg
 viewStartScreen =
-    screenContainer startScreenClass
-        [ h1 [ class gameTitleClass ] [ text gameTitleText ]
-        , p [ class gameDescriptionClass ] [ text gameDescriptionText ]
-        , button [ class startButtonClass, onClick StartGame ] [ text startGameText ]
+    div (applyStyles screenStyles)
+        [ h1 (applyStyles gameTitleStyles) [ text gameTitleText ]
+        , p (applyStyles gameDescriptionStyles) [ text gameDescriptionText ]
+        , button (applyStyles buttonBaseStyles ++ [onClick StartGame]) [ text startGameText ]
         ]
 
 
 -- Language selection screen view
 viewLanguageSelection : Html Msg
 viewLanguageSelection =
-    screenContainer languageScreenClass
-        [ titleHeader chooseLanguageText
-        , selectionButtonContainer selectionButtonsClass
-            [ selectionButton selectionButtonClass englishText (SelectLanguage English)
-            , selectionButton selectionButtonClass germanText (SelectLanguage German)
-            , selectionButton selectionButtonClass estonianText (SelectLanguage Estonian)
+    div (applyStyles screenStyles)
+        [ h2 (applyStyles screenTitleStyles) [ text chooseLanguageText ]
+        , div (applyStyles buttonContainerStyles)
+            [ button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage English)]) [ text englishText ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage German)]) [ text germanText ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage Estonian)]) [ text estonianText ]
             ]
         ]
 
@@ -256,12 +256,12 @@ viewLanguageSelection =
 -- Category selection screen view
 viewCategorySelection : Html Msg
 viewCategorySelection =
-    screenContainer categoryScreenClass
-        [ titleHeader chooseCategoryText
-        , selectionButtonContainer selectionButtonsClass
-            [ selectionButton selectionButtonClass animalsText (SelectCategory Animals)
-            , selectionButton selectionButtonClass foodText (SelectCategory Food)
-            , selectionButton selectionButtonClass sportText (SelectCategory Sport)
+    div (applyStyles screenStyles)
+        [ h2 (applyStyles screenTitleStyles) [ text chooseCategoryText ]
+        , div (applyStyles buttonContainerStyles)
+            [ button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Animals)]) [ text animalsText ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Food)]) [ text foodText ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Sport)]) [ text sportText ]
             ]
         ]
 
@@ -269,12 +269,21 @@ viewCategorySelection =
 -- Difficulty selection screen view
 viewDifficultySelection : Model -> Html Msg
 viewDifficultySelection model =
-    screenContainer difficultyScreenClass
-        [ titleHeader chooseDifficultyText
-        , selectionButtonContainer difficultyButtonsClass
-            [ difficultyButton difficultyButtonClass easyClass easyText easyDescriptionText (SelectDifficulty Easy)
-            , difficultyButton difficultyButtonClass mediumClass mediumText mediumDescriptionText (SelectDifficulty Medium)
-            , difficultyButton difficultyButtonClass hardClass hardText hardDescriptionText (SelectDifficulty Hard)
+    div (applyStyles screenStyles)
+        [ h2 (applyStyles screenTitleStyles) [ text chooseDifficultyText ]
+        , div (applyStyles buttonContainerStyles)
+            [ button (applyStyles easyButtonStyles ++ [onClick (SelectDifficulty Easy)])
+                [ text easyText
+                , p (applyStyles difficultyDescriptionStyles) [ text easyDescriptionText ]
+                ]
+            , button (applyStyles mediumButtonStyles ++ [onClick (SelectDifficulty Medium)])
+                [ text mediumText
+                , p (applyStyles difficultyDescriptionStyles) [ text mediumDescriptionText ]
+                ]
+            , button (applyStyles hardButtonStyles ++ [onClick (SelectDifficulty Hard)])
+                [ text hardText
+                , p (applyStyles difficultyDescriptionStyles) [ text hardDescriptionText ]
+                ]
             ]
         , viewErrorMessage model.errorMessage
         ]
@@ -283,35 +292,35 @@ viewDifficultySelection model =
 -- Game screen view
 viewGameScreen : Model -> Html Msg
 viewGameScreen model =
-    screenContainer gameScreenClass
-        [ titleHeader hangmanText
-        , div [ class gameInfoClass ]
-            [ p [ class difficultyDisplayClass ] 
+    div (applyStyles screenStyles)
+        [ h2 (applyStyles screenTitleStyles) [ text hangmanText ]
+        , div (applyStyles gameInfoStyles)
+            [ p [] 
                 [ text (difficultyLabelText ++ (getDifficultyName model.selectedDifficulty)) ]
-            , p [ class remainingGuessesClass ] 
+            , p [] 
                 [ text (remainingGuessesText ++ String.fromInt model.remainingGuesses) ]
             ]
-        , div [ class wordDisplayClass ]
-            [ h1 [ class maskedWordClass ] [ text (formatMaskedWord (getMaskedWord model.currentWord model.guessedLetters)) ]
+        , div (applyStyles wordDisplayStyles)
+            [ h1 (applyStyles maskedWordStyles) [ text (formatMaskedWord (getMaskedWord model.currentWord model.guessedLetters)) ]
             ]
-        , div [ class guessedLettersClass ]
-            [ p [ class guessedTitleClass ] [ text guessedLettersText ]
-            , p [ class guessedListClass ] [ text (formatGuessedLetters model.guessedLetters) ]
+        , div (applyStyles guessedLettersStyles)
+            [ p (applyStyles guessedTitleStyles) [ text guessedLettersText ]
+            , p (applyStyles guessedListStyles) [ text (formatGuessedLetters model.guessedLetters) ]
             ]
-        , div [ class guessInputClass ]
+        , div (applyStyles guessInputStyles)
             [ input 
+                (applyStyles letterInputStyles ++ 
                 [ type_ "text"
                 , value model.userInput
                 , onInput UpdateInput
                 , placeholder enterLetterPlaceholder
-                , class letterInputClass
                 , disabled (model.gameState /= Playing)
-                ] []
+                ]) []
             , button 
+                (applyStyles buttonBaseStyles ++
                 [ onClick MakeGuess
-                , class guessButtonClass
                 , disabled (model.gameState /= Playing || String.isEmpty model.userInput)
-                ] [ text guessText ]
+                ]) [ text guessText ]
             ]
         , viewErrorMessage model.errorMessage
         ]
@@ -320,23 +329,23 @@ viewGameScreen model =
 -- Game over screen view
 viewGameOver : Model -> Html Msg
 viewGameOver model =
-    screenContainer gameOverScreenClass
-        [ titleHeader gameOverText
-        , div [ class gameResultClass ]
-            [ h1 [ class (resultMessageClass ++ " " ++ (if model.gameState == Won then wonClass else lostClass)) ]
+    div (applyStyles screenStyles)
+        [ h2 (applyStyles screenTitleStyles) [ text gameOverText ]
+        , div (applyStyles gameResultStyles)
+            [ h1 (applyStyles resultMessageStyles ++ applyStyles (if model.gameState == Won then wonStyles else lostStyles))
                 [ text (if model.gameState == Won then youWonText else youLostText) ]
-            , div [ class wordRevealClass ]
-                [ p [ class wordLabelClass ] [ text wordWasText ]
-                , h2 [ class revealedWordClass ] [ text (String.toUpper model.currentWord) ]
+            , div (applyStyles wordRevealStyles)
+                [ p (applyStyles wordLabelStyles) [ text wordWasText ]
+                , h2 (applyStyles revealedWordStyles) [ text (String.toUpper model.currentWord) ]
                 ]
-            , div [ class gameStatsClass ]
+            , div (applyStyles gameStatsStyles)
                 [ p [] [ text (guessedLettersStatsText ++ formatGuessedLetters model.guessedLetters) ]
                 , p [] [ text (remainingGuessesStatsText ++ String.fromInt model.remainingGuesses) ]
                 ]
             ]
-        , div [ class gameOverButtonsClass ]
-            [ button [ class playAgainButtonClass, onClick PlayAgain ] [ text playAgainText ]
-            , button [ class backToStartButtonClass, onClick BackToStart ] [ text backToStartText ]
+        , div (applyStyles gameOverButtonsStyles)
+            [ button (applyStyles buttonBaseStyles ++ [onClick PlayAgain]) [ text playAgainText ]
+            , button (applyStyles buttonBaseStyles ++ [onClick BackToStart]) [ text backToStartText ]
             ]
         ]
 
@@ -344,7 +353,7 @@ viewGameOver model =
 -- Main view function
 view : Model -> Html Msg
 view model =
-    div [ class appClass ]
+    div (applyStyles appStyles)
         [ case model.currentScreen of
             Start ->
                 viewStartScreen
@@ -377,39 +386,313 @@ main =
         }
 
 
--- REUSABLE VIEW COMPONENTS
+-- INLINE STYLES FOR MOBILE RESPONSIVENESS
 
--- Screen container with specific class
-screenContainer : String -> List (Html msg) -> Html msg
-screenContainer specificClass content =
-    div [ class (screenClass ++ " " ++ specificClass) ] content
+-- App container styles (mobile-first responsive)
+appStyles : List (String, String)
+appStyles = 
+    [ ("width", "100%")
+    , ("min-height", "100vh")
+    , ("display", "flex")
+    , ("flex-direction", "column")
+    , ("justify-content", "center")
+    , ("align-items", "center")
+    , ("background", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)")
+    , ("padding", "5px")
+    , ("box-sizing", "border-box")
+    , ("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif")
+    , ("-webkit-font-smoothing", "antialiased")
+    , ("-moz-osx-font-smoothing", "grayscale")
+    ]
 
+-- Screen container styles (mobile-first responsive)
+screenStyles : List (String, String)
+screenStyles = 
+    [ ("background", "white")
+    , ("border-radius", "8px")
+    , ("box-shadow", "0 10px 30px rgba(0, 0, 0, 0.2)")
+    , ("padding", "15px")
+    , ("max-width", "400px")
+    , ("width", "100%")
+    , ("margin", "5px")
+    , ("box-sizing", "border-box")
+    , ("text-align", "center")
+    ]
 
--- Title header for screens
-titleHeader : String -> Html msg
-titleHeader title =
-    h2 [ class screenTitleClass ] [ text title ]
+-- Title styles (mobile-first responsive)
+gameTitleStyles : List (String, String)
+gameTitleStyles = 
+    [ ("font-size", "clamp(1.5rem, 4vw, 2rem)")
+    , ("font-weight", "bold")
+    , ("color", "#333")
+    , ("margin", "0 0 10px 0")
+    , ("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.1)")
+    ]
 
+-- Description styles
+gameDescriptionStyles : List (String, String)
+gameDescriptionStyles = 
+    [ ("font-size", "1rem")
+    , ("color", "#666")
+    , ("margin", "0 0 20px 0")
+    ]
 
--- Standard selection button
-selectionButton : String -> String -> msg -> Html msg
-selectionButton className label clickMsg =
-    button [ class className, onClick clickMsg ] [ text label ]
+-- Screen title styles (mobile-first responsive)
+screenTitleStyles : List (String, String)
+screenTitleStyles = 
+    [ ("font-size", "clamp(1.2rem, 3vw, 1.5rem)")
+    , ("font-weight", "bold")
+    , ("color", "#333")
+    , ("margin", "0 0 20px 0")
+    ]
 
+-- Button base styles
+buttonBaseStyles : List (String, String)
+buttonBaseStyles = 
+    [ ("background", "#667eea")
+    , ("color", "white")
+    , ("border", "none")
+    , ("border-radius", "8px")
+    , ("padding", "12px 24px")
+    , ("font-size", "1rem")
+    , ("font-weight", "500")
+    , ("cursor", "pointer")
+    , ("transition", "all 0.3s ease")
+    , ("margin", "5px")
+    , ("min-height", "48px")
+    , ("min-width", "120px")
+    ]
 
--- Container for selection buttons
-selectionButtonContainer : String -> List (Html msg) -> Html msg
-selectionButtonContainer className buttons =
-    div [ class className ] buttons
+-- Button container styles
+buttonContainerStyles : List (String, String)
+buttonContainerStyles = 
+    [ ("display", "flex")
+    , ("flex-direction", "column")
+    , ("gap", "10px")
+    , ("margin", "20px 0")
+    ]
 
+-- Difficulty button styles
+difficultyButtonStyles : List (String, String)
+difficultyButtonStyles = 
+    buttonBaseStyles ++ 
+    [ ("display", "flex")
+    , ("flex-direction", "column")
+    , ("align-items", "center")
+    , ("padding", "16px")
+    , ("text-align", "center")
+    ]
 
--- Difficulty button with description
-difficultyButton : String -> String -> String -> String -> msg -> Html msg
-difficultyButton baseClass extraClass label description clickMsg =
-    button [ class (baseClass ++ " " ++ extraClass), onClick clickMsg ]
-        [ text label
-        , p [ class difficultyDescriptionClass ] [ text description ]
-        ]
+-- Easy button styles
+easyButtonStyles : List (String, String)
+easyButtonStyles = 
+    difficultyButtonStyles ++
+    [ ("background", "#4CAF50")
+    ]
+
+-- Medium button styles
+mediumButtonStyles : List (String, String)
+mediumButtonStyles = 
+    difficultyButtonStyles ++
+    [ ("background", "#FF9800")
+    ]
+
+-- Hard button styles
+hardButtonStyles : List (String, String)
+hardButtonStyles = 
+    difficultyButtonStyles ++
+    [ ("background", "#f44336")
+    ]
+
+-- Difficulty description styles
+difficultyDescriptionStyles : List (String, String)
+difficultyDescriptionStyles = 
+    [ ("font-size", "0.8rem")
+    , ("margin", "4px 0 0 0")
+    , ("opacity", "0.9")
+    ]
+
+-- Game info styles (mobile-first responsive)
+gameInfoStyles : List (String, String)
+gameInfoStyles = 
+    [ ("display", "flex")
+    , ("flex-direction", "column")
+    , ("gap", "5px")
+    , ("text-align", "center")
+    , ("margin", "20px 0")
+    , ("font-size", "0.9rem")
+    , ("color", "#666")
+    ]
+
+-- Word display styles
+wordDisplayStyles : List (String, String)
+wordDisplayStyles = 
+    [ ("margin", "20px 0")
+    ]
+
+-- Masked word styles (mobile-first responsive)
+maskedWordStyles : List (String, String)
+maskedWordStyles = 
+    [ ("font-size", "clamp(1.5rem, 5vw, 2rem)")
+    , ("font-weight", "bold")
+    , ("color", "#333")
+    , ("letter-spacing", "0.1em")
+    , ("margin", "0")
+    , ("font-family", "'Courier New', monospace")
+    ]
+
+-- Guessed letters container styles
+guessedLettersStyles : List (String, String)
+guessedLettersStyles = 
+    [ ("margin", "20px 0")
+    , ("padding", "15px")
+    , ("background", "#f8f9fa")
+    , ("border-radius", "8px")
+    , ("border", "1px solid #e9ecef")
+    ]
+
+-- Guessed letters title styles
+guessedTitleStyles : List (String, String)
+guessedTitleStyles = 
+    [ ("font-size", "0.9rem")
+    , ("color", "#666")
+    , ("margin", "0 0 5px 0")
+    ]
+
+-- Guessed letters list styles
+guessedListStyles : List (String, String)
+guessedListStyles = 
+    [ ("font-size", "1rem")
+    , ("color", "#333")
+    , ("margin", "0")
+    , ("font-family", "'Courier New', monospace")
+    ]
+
+-- Guess input container styles
+guessInputStyles : List (String, String)
+guessInputStyles = 
+    [ ("display", "flex")
+    , ("flex-direction", "column")
+    , ("gap", "10px")
+    , ("margin", "20px 0")
+    ]
+
+-- Letter input styles
+letterInputStyles : List (String, String)
+letterInputStyles = 
+    [ ("padding", "12px")
+    , ("border", "2px solid #ddd")
+    , ("border-radius", "8px")
+    , ("font-size", "1rem")
+    , ("text-align", "center")
+    , ("outline", "none")
+    , ("transition", "border-color 0.3s ease")
+    ]
+
+-- Game result styles
+gameResultStyles : List (String, String)
+gameResultStyles = 
+    [ ("margin", "20px 0")
+    ]
+
+-- Result message styles (mobile-first responsive)
+resultMessageStyles : List (String, String)
+resultMessageStyles = 
+    [ ("font-size", "clamp(1.2rem, 3vw, 1.5rem)")
+    , ("font-weight", "bold")
+    , ("margin", "0 0 20px 0")
+    ]
+
+-- Won styles
+wonStyles : List (String, String)
+wonStyles = 
+    [ ("color", "#4CAF50")
+    ]
+
+-- Lost styles
+lostStyles : List (String, String)
+lostStyles = 
+    [ ("color", "#f44336")
+    ]
+
+-- Word reveal styles
+wordRevealStyles : List (String, String)
+wordRevealStyles = 
+    [ ("margin", "20px 0")
+    , ("padding", "15px")
+    , ("background", "#f8f9fa")
+    , ("border-radius", "8px")
+    , ("border", "1px solid #e9ecef")
+    ]
+
+-- Word label styles
+wordLabelStyles : List (String, String)
+wordLabelStyles = 
+    [ ("font-size", "0.9rem")
+    , ("color", "#666")
+    , ("margin", "0 0 5px 0")
+    ]
+
+-- Revealed word styles (mobile-first responsive)
+revealedWordStyles : List (String, String)
+revealedWordStyles = 
+    [ ("font-size", "clamp(1.2rem, 4vw, 1.5rem)")
+    , ("font-weight", "bold")
+    , ("color", "#333")
+    , ("margin", "0")
+    , ("font-family", "'Courier New', monospace")
+    ]
+
+-- Game stats styles
+gameStatsStyles : List (String, String)
+gameStatsStyles = 
+    [ ("margin", "20px 0")
+    , ("font-size", "0.9rem")
+    , ("color", "#666")
+    ]
+
+-- Game over buttons styles (mobile-first responsive)
+gameOverButtonsStyles : List (String, String)
+gameOverButtonsStyles = 
+    buttonContainerStyles ++
+    [ ("flex-direction", "column")
+    , ("gap", "10px")
+    ]
+
+-- Error message styles
+errorMessageStyles : List (String, String)
+errorMessageStyles = 
+    [ ("background", "#ffebee")
+    , ("color", "#c62828")
+    , ("padding", "10px")
+    , ("border-radius", "8px")
+    , ("margin", "15px 0")
+    , ("border", "1px solid #ffcdd2")
+    , ("display", "flex")
+    , ("justify-content", "space-between")
+    , ("align-items", "center")
+    ]
+
+-- Clear error button styles
+clearErrorButtonStyles : List (String, String)
+clearErrorButtonStyles = 
+    [ ("background", "transparent")
+    , ("border", "none")
+    , ("color", "#c62828")
+    , ("font-size", "1.2rem")
+    , ("cursor", "pointer")
+    , ("padding", "0")
+    , ("margin", "0")
+    , ("min-height", "auto")
+    , ("min-width", "auto")
+    ]
+
+-- Helper function to apply styles
+applyStyles : List (String, String) -> List (Html.Attribute msg)
+applyStyles styles =
+    List.map (\(prop, val) -> style prop val) styles
+
+-- REUSABLE VIEW COMPONENTS (no longer needed with inline styles)
 
 
 -- HELPER FUNCTIONS FOR VIEW
@@ -448,9 +731,9 @@ viewErrorMessage : Maybe AppError -> Html Msg
 viewErrorMessage maybeError =
     case maybeError of
         Just error ->
-            div [ class errorMessageClass ]
+            div (applyStyles errorMessageStyles)
                 [ p [] [ text (errorToString error) ]
-                , button [ class clearErrorButtonClass, onClick ClearError ] [ text clearErrorText ]
+                , button (applyStyles clearErrorButtonStyles ++ [onClick ClearError]) [ text clearErrorText ]
                 ]
         
         Nothing ->
