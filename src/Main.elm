@@ -297,6 +297,8 @@ viewGameScreen model =
         [ h2 (applyStyles screenTitleStyles) [ text (T.translate model.uiLanguage T.Hangman) ]
         , div (applyStyles gameInfoStyles)
             [ p [] 
+                [ text (T.translate model.uiLanguage T.CategoryLabel ++ (getCategoryName model.uiLanguage model.selectedCategory)) ]
+            , p [] 
                 [ text (T.translate model.uiLanguage T.DifficultyLabel ++ (getDifficultyName model.uiLanguage model.selectedDifficulty)) ]
             , p [] 
                 [ text (T.translate model.uiLanguage T.RemainingGuesses ++ String.fromInt model.remainingGuesses) ]
@@ -724,6 +726,16 @@ getDifficultyName uiLanguage maybeDifficulty =
         Just Easy -> T.translate uiLanguage T.Easy
         Just Medium -> T.translate uiLanguage T.Medium
         Just Hard -> T.translate uiLanguage T.Hard
+        Nothing -> T.translate uiLanguage T.Unknown
+
+
+-- Get category name for display
+getCategoryName : Language -> Maybe Category -> String
+getCategoryName uiLanguage maybeCategory =
+    case maybeCategory of
+        Just Animals -> T.translate uiLanguage T.Animals
+        Just Food -> T.translate uiLanguage T.Food
+        Just Sport -> T.translate uiLanguage T.Sport
         Nothing -> T.translate uiLanguage T.Unknown
 
 
