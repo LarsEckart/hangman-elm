@@ -40,6 +40,7 @@ elm-test
 ```bash
 # Development server (builds word lists + starts elm reactor)
 npm run dev
+# ⚠️ IMPORTANT: Do NOT run this in automated contexts - it starts a persistent server
 
 # Production build (builds word lists + creates self-contained HTML)
 npm run build

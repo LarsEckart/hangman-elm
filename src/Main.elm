@@ -6,6 +6,7 @@ import Html.Attributes exposing (class, type_, value, placeholder, disabled, sty
 import Html.Events exposing (onClick, onInput)
 import Random
 import Types exposing (..)
+import Types exposing (wordFromString, wordToString, GuessedLetters, emptyGuessedLetters, addGuessedLetter, isLetterGuessed, guessedLettersToList)
 import GameLogic exposing (..)
 import Generated.WordLists as EmbeddedWordLists
 import Translations as T
@@ -231,7 +232,7 @@ handleGuessLetter letter model =
     if model.gameState /= Playing then
         -- Don't process guesses if game is already over
         (model, Cmd.none)
-    else if List.member letter model.guessedLetters then
+    else if isLetterGuessed letter model.guessedLetters then
         -- Letter already guessed, ignore
         (model, Cmd.none)
     else
@@ -282,7 +283,7 @@ handleWordSelected difficulty index model =
     in
     ( { model 
       | currentScreen = Game
-      , currentWord = selectedWord
+      , currentWord = wordFromString selectedWord
       }
     , Cmd.none
     )
@@ -380,7 +381,7 @@ viewGameOver model =
                 [ text (if model.gameState == Won then T.translate model.uiLanguage T.YouWon else T.translate model.uiLanguage T.YouLost) ]
             , div (applyStyles wordRevealStyles)
                 [ p (applyStyles wordLabelStyles) [ text (T.translate model.uiLanguage T.WordWas) ]
-                , h2 (applyStyles revealedWordStyles) [ text (String.toUpper model.currentWord) ]
+                , h2 (applyStyles revealedWordStyles) [ text (wordToString model.currentWord) ]
                 ]
             , div (applyStyles gameStatsStyles)
                 [ p [] [ text (T.translate model.uiLanguage T.GuessedLettersStats ++ formatGuessedLetters model.uiLanguage model.guessedLetters) ]
@@ -805,13 +806,16 @@ formatMaskedWord word =
 
 
 -- Format guessed letters as a comma-separated list
-formatGuessedLetters : Language -> List Char -> String
-formatGuessedLetters uiLanguage letters =
+formatGuessedLetters : Language -> GuessedLetters -> String
+formatGuessedLetters uiLanguage guessedLetters =
+    let
+        letters = guessedLettersToList guessedLetters
+    in
     if List.isEmpty letters then
         T.translate uiLanguage T.None
     else
         letters
-            |> List.map (String.fromChar >> String.toUpper)
+            |> List.map String.fromChar
             |> String.join ", "
 
 
@@ -850,7 +854,7 @@ viewErrorMessage uiLanguage maybeError =
 
 
 -- Helper function to validate user input for making a guess
-validateGuess : String -> List Char -> Result AppError Char
+validateGuess : String -> GuessedLetters -> Result AppError Char
 validateGuess input guessedLetters =
     validateUserInput input guessedLetters
 
@@ -870,7 +874,7 @@ getAlphabetForLanguage language =
 
 
 -- Generate letter buttons for the alphabet
-viewLetterButtons : Language -> String -> List Char -> GameState -> List (Html Msg)
+viewLetterButtons : Language -> Word -> GuessedLetters -> GameState -> List (Html Msg)
 viewLetterButtons language currentWord guessedLetters gameState =
     let
         alphabet = getAlphabetForLanguage language
@@ -879,8 +883,8 @@ viewLetterButtons language currentWord guessedLetters gameState =
         makeButton : Char -> Html Msg
         makeButton letter =
             let
-                isGuessed = List.member (Char.toLower letter) guessedLetters
-                isInWord = isLetterInWord (Char.toLower letter) currentWord
+                isGuessed = isLetterGuessed letter guessedLetters
+                isInWord = isLetterInWord (Char.toUpper letter) currentWord
                 isDisabled = gameState /= Playing || isGuessed
                 
                 buttonStyle = 
@@ -894,7 +898,7 @@ viewLetterButtons language currentWord guessedLetters gameState =
             in
             button 
                 (applyStyles buttonStyle ++ 
-                [ onClick (GuessLetter (Char.toLower letter))
+                [ onClick (GuessLetter (Char.toUpper letter))
                 , disabled isDisabled
                 ])
                 [ text (String.fromChar letter) ]

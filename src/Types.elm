@@ -1,8 +1,62 @@
 module Types exposing (..)
 
--- Type aliases for clarity and readability
-type alias Word = String
-type alias GuessedLetters = List Char
+-- Opaque type for Word to ensure type safety and guarantee uppercase
+type Word = Word String
+
+-- Helper functions for Word opaque type
+wordFromString : String -> Word
+wordFromString str =
+    Word (String.toUpper str)
+
+wordToString : Word -> String
+wordToString (Word str) =
+    str
+
+wordContains : String -> Word -> Bool
+wordContains substring (Word str) =
+    String.contains substring str
+
+wordToList : Word -> List Char
+wordToList (Word str) =
+    String.toList str
+
+wordLength : Word -> Int
+wordLength (Word str) =
+    String.length str
+
+-- Opaque type for GuessedLetters to ensure type safety and guarantee uppercase
+type GuessedLetters = GuessedLetters (List Char)
+
+-- Helper functions for GuessedLetters opaque type
+emptyGuessedLetters : GuessedLetters
+emptyGuessedLetters =
+    GuessedLetters []
+
+guessedLettersFromList : List Char -> GuessedLetters
+guessedLettersFromList chars =
+    GuessedLetters (List.map Char.toUpper chars)
+
+guessedLettersToList : GuessedLetters -> List Char
+guessedLettersToList (GuessedLetters chars) =
+    chars
+
+addGuessedLetter : Char -> GuessedLetters -> GuessedLetters
+addGuessedLetter letter (GuessedLetters chars) =
+    let
+        upperLetter = Char.toUpper letter
+    in
+    if List.member upperLetter chars then
+        GuessedLetters chars
+    else
+        GuessedLetters (chars ++ [upperLetter])
+
+isLetterGuessed : Char -> GuessedLetters -> Bool
+isLetterGuessed letter (GuessedLetters chars) =
+    List.member (Char.toUpper letter) chars
+
+guessedLettersLength : GuessedLetters -> Int
+guessedLettersLength (GuessedLetters chars) =
+    List.length chars
 type alias RemainingGuesses = Int
 type alias UserInput = String
 
@@ -116,10 +170,10 @@ getDifficultyWordLength difficulty =
 isValidWordForDifficulty : Word -> Difficulty -> Bool
 isValidWordForDifficulty word difficulty =
     let
-        wordLength = String.length word
+        length = wordLength word
         { min, max } = getDifficultyWordLength difficulty
     in
-    wordLength >= min && wordLength <= max
+    length >= min && length <= max
 
 
 -- Helper functions for error handling
@@ -191,7 +245,7 @@ errorToString uiLanguage error =
 
 
 -- Helper function to validate user input and return appropriate error
-validateUserInput : String -> List Char -> Result AppError Char
+validateUserInput : String -> GuessedLetters -> Result AppError Char
 validateUserInput input guessedLetters =
     case String.toList input of
         [] ->
@@ -200,7 +254,7 @@ validateUserInput input guessedLetters =
         [char] ->
             if not (Char.isAlpha char) then
                 Err (InvalidGuess (NonAlphabetic input))
-            else if List.member (Char.toLower char) guessedLetters then
+            else if isLetterGuessed char guessedLetters then
                 Err (InvalidGuess (AlreadyGuessed char))
             else
                 Ok char
@@ -213,8 +267,8 @@ validateUserInput input guessedLetters =
 resetGame : Model -> Model
 resetGame model =
     { model
-    | currentWord = ""
-    , guessedLetters = []
+    | currentWord = wordFromString ""
+    , guessedLetters = emptyGuessedLetters
     , remainingGuesses = maxGuesses
     , gameState = Playing
     , userInput = ""
@@ -231,8 +285,8 @@ initialModel =
     , uiLanguage = English  -- Default UI language
     , selectedCategory = Nothing
     , selectedDifficulty = Nothing
-    , currentWord = ""
-    , guessedLetters = []
+    , currentWord = wordFromString ""
+    , guessedLetters = emptyGuessedLetters
     , remainingGuesses = maxGuesses
     , gameState = Playing
     , userInput = ""
