@@ -8,7 +8,7 @@ import Random
 import Types exposing (..)
 import GameLogic exposing (..)
 import Generated.WordLists as EmbeddedWordLists
-import ViewConstants exposing (..)
+import Translations as T
 
 
 -- Initialize the application model
@@ -70,6 +70,7 @@ handleSelectLanguage : Language -> Model -> (Model, Cmd Msg)
 handleSelectLanguage language model =
     ( { model 
       | selectedLanguage = Just language
+      , uiLanguage = language  -- Update UI language to match selected game language
       , currentScreen = CategorySelection
       }
     , Cmd.none
@@ -231,37 +232,37 @@ handleWordSelected difficulty index model =
 -- VIEW FUNCTIONS
 
 -- Start screen view
-viewStartScreen : Html Msg
-viewStartScreen =
+viewStartScreen : Language -> Html Msg
+viewStartScreen uiLanguage =
     div (applyStyles screenStyles)
-        [ h1 (applyStyles gameTitleStyles) [ text gameTitleText ]
-        , p (applyStyles gameDescriptionStyles) [ text gameDescriptionText ]
-        , button (applyStyles buttonBaseStyles ++ [onClick StartGame]) [ text startGameText ]
+        [ h1 (applyStyles gameTitleStyles) [ text (T.translate uiLanguage T.GameTitle) ]
+        , p (applyStyles gameDescriptionStyles) [ text (T.translate uiLanguage T.GameDescription) ]
+        , button (applyStyles buttonBaseStyles ++ [onClick StartGame]) [ text (T.translate uiLanguage T.StartGame) ]
         ]
 
 
 -- Language selection screen view
-viewLanguageSelection : Html Msg
-viewLanguageSelection =
+viewLanguageSelection : Language -> Html Msg
+viewLanguageSelection uiLanguage =
     div (applyStyles screenStyles)
-        [ h2 (applyStyles screenTitleStyles) [ text chooseLanguageText ]
+        [ h2 (applyStyles screenTitleStyles) [ text (T.translate uiLanguage T.ChooseLanguage) ]
         , div (applyStyles buttonContainerStyles)
-            [ button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage English)]) [ text englishText ]
-            , button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage German)]) [ text germanText ]
-            , button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage Estonian)]) [ text estonianText ]
+            [ button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage English)]) [ text (T.translate uiLanguage T.EnglishLanguage) ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage German)]) [ text (T.translate uiLanguage T.GermanLanguage) ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectLanguage Estonian)]) [ text (T.translate uiLanguage T.EstonianLanguage) ]
             ]
         ]
 
 
 -- Category selection screen view
-viewCategorySelection : Html Msg
-viewCategorySelection =
+viewCategorySelection : Language -> Html Msg
+viewCategorySelection uiLanguage =
     div (applyStyles screenStyles)
-        [ h2 (applyStyles screenTitleStyles) [ text chooseCategoryText ]
+        [ h2 (applyStyles screenTitleStyles) [ text (T.translate uiLanguage T.ChooseCategory) ]
         , div (applyStyles buttonContainerStyles)
-            [ button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Animals)]) [ text animalsText ]
-            , button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Food)]) [ text foodText ]
-            , button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Sport)]) [ text sportText ]
+            [ button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Animals)]) [ text (T.translate uiLanguage T.Animals) ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Food)]) [ text (T.translate uiLanguage T.Food) ]
+            , button (applyStyles buttonBaseStyles ++ [onClick (SelectCategory Sport)]) [ text (T.translate uiLanguage T.Sport) ]
             ]
         ]
 
@@ -270,22 +271,22 @@ viewCategorySelection =
 viewDifficultySelection : Model -> Html Msg
 viewDifficultySelection model =
     div (applyStyles screenStyles)
-        [ h2 (applyStyles screenTitleStyles) [ text chooseDifficultyText ]
+        [ h2 (applyStyles screenTitleStyles) [ text (T.translate model.uiLanguage T.ChooseDifficulty) ]
         , div (applyStyles buttonContainerStyles)
             [ button (applyStyles easyButtonStyles ++ [onClick (SelectDifficulty Easy)])
-                [ text easyText
-                , p (applyStyles difficultyDescriptionStyles) [ text easyDescriptionText ]
+                [ text (T.translate model.uiLanguage T.Easy)
+                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.EasyDescription) ]
                 ]
             , button (applyStyles mediumButtonStyles ++ [onClick (SelectDifficulty Medium)])
-                [ text mediumText
-                , p (applyStyles difficultyDescriptionStyles) [ text mediumDescriptionText ]
+                [ text (T.translate model.uiLanguage T.Medium)
+                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.MediumDescription) ]
                 ]
             , button (applyStyles hardButtonStyles ++ [onClick (SelectDifficulty Hard)])
-                [ text hardText
-                , p (applyStyles difficultyDescriptionStyles) [ text hardDescriptionText ]
+                [ text (T.translate model.uiLanguage T.Hard)
+                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.HardDescription) ]
                 ]
             ]
-        , viewErrorMessage model.errorMessage
+        , viewErrorMessage model.uiLanguage model.errorMessage
         ]
 
 
@@ -293,19 +294,19 @@ viewDifficultySelection model =
 viewGameScreen : Model -> Html Msg
 viewGameScreen model =
     div (applyStyles screenStyles)
-        [ h2 (applyStyles screenTitleStyles) [ text hangmanText ]
+        [ h2 (applyStyles screenTitleStyles) [ text (T.translate model.uiLanguage T.Hangman) ]
         , div (applyStyles gameInfoStyles)
             [ p [] 
-                [ text (difficultyLabelText ++ (getDifficultyName model.selectedDifficulty)) ]
+                [ text (T.translate model.uiLanguage T.DifficultyLabel ++ (getDifficultyName model.uiLanguage model.selectedDifficulty)) ]
             , p [] 
-                [ text (remainingGuessesText ++ String.fromInt model.remainingGuesses) ]
+                [ text (T.translate model.uiLanguage T.RemainingGuesses ++ String.fromInt model.remainingGuesses) ]
             ]
         , div (applyStyles wordDisplayStyles)
             [ h1 (applyStyles maskedWordStyles) [ text (formatMaskedWord (getMaskedWord model.currentWord model.guessedLetters)) ]
             ]
         , div (applyStyles guessedLettersStyles)
-            [ p (applyStyles guessedTitleStyles) [ text guessedLettersText ]
-            , p (applyStyles guessedListStyles) [ text (formatGuessedLetters model.guessedLetters) ]
+            [ p (applyStyles guessedTitleStyles) [ text (T.translate model.uiLanguage T.GuessedLetters) ]
+            , p (applyStyles guessedListStyles) [ text (formatGuessedLetters model.uiLanguage model.guessedLetters) ]
             ]
         , div (applyStyles guessInputStyles)
             [ input 
@@ -313,16 +314,16 @@ viewGameScreen model =
                 [ type_ "text"
                 , value model.userInput
                 , onInput UpdateInput
-                , placeholder enterLetterPlaceholder
+                , placeholder (T.translate model.uiLanguage T.EnterLetterPlaceholder)
                 , disabled (model.gameState /= Playing)
                 ]) []
             , button 
                 (applyStyles buttonBaseStyles ++
                 [ onClick MakeGuess
                 , disabled (model.gameState /= Playing || String.isEmpty model.userInput)
-                ]) [ text guessText ]
+                ]) [ text (T.translate model.uiLanguage T.Guess) ]
             ]
-        , viewErrorMessage model.errorMessage
+        , viewErrorMessage model.uiLanguage model.errorMessage
         ]
 
 
@@ -330,22 +331,22 @@ viewGameScreen model =
 viewGameOver : Model -> Html Msg
 viewGameOver model =
     div (applyStyles screenStyles)
-        [ h2 (applyStyles screenTitleStyles) [ text gameOverText ]
+        [ h2 (applyStyles screenTitleStyles) [ text (T.translate model.uiLanguage T.GameOver) ]
         , div (applyStyles gameResultStyles)
             [ h1 (applyStyles resultMessageStyles ++ applyStyles (if model.gameState == Won then wonStyles else lostStyles))
-                [ text (if model.gameState == Won then youWonText else youLostText) ]
+                [ text (if model.gameState == Won then T.translate model.uiLanguage T.YouWon else T.translate model.uiLanguage T.YouLost) ]
             , div (applyStyles wordRevealStyles)
-                [ p (applyStyles wordLabelStyles) [ text wordWasText ]
+                [ p (applyStyles wordLabelStyles) [ text (T.translate model.uiLanguage T.WordWas) ]
                 , h2 (applyStyles revealedWordStyles) [ text (String.toUpper model.currentWord) ]
                 ]
             , div (applyStyles gameStatsStyles)
-                [ p [] [ text (guessedLettersStatsText ++ formatGuessedLetters model.guessedLetters) ]
-                , p [] [ text (remainingGuessesStatsText ++ String.fromInt model.remainingGuesses) ]
+                [ p [] [ text (T.translate model.uiLanguage T.GuessedLettersStats ++ formatGuessedLetters model.uiLanguage model.guessedLetters) ]
+                , p [] [ text (T.translate model.uiLanguage T.RemainingGuessesStats ++ String.fromInt model.remainingGuesses) ]
                 ]
             ]
         , div (applyStyles gameOverButtonsStyles)
-            [ button (applyStyles buttonBaseStyles ++ [onClick PlayAgain]) [ text playAgainText ]
-            , button (applyStyles buttonBaseStyles ++ [onClick BackToStart]) [ text backToStartText ]
+            [ button (applyStyles buttonBaseStyles ++ [onClick PlayAgain]) [ text (T.translate model.uiLanguage T.PlayAgain) ]
+            , button (applyStyles buttonBaseStyles ++ [onClick BackToStart]) [ text (T.translate model.uiLanguage T.BackToStart) ]
             ]
         ]
 
@@ -356,13 +357,13 @@ view model =
     div (applyStyles appStyles)
         [ case model.currentScreen of
             Start ->
-                viewStartScreen
+                viewStartScreen model.uiLanguage
             
             LanguageSelection ->
-                viewLanguageSelection
+                viewLanguageSelection model.uiLanguage
             
             CategorySelection ->
-                viewCategorySelection
+                viewCategorySelection model.uiLanguage
             
             DifficultySelection ->
                 viewDifficultySelection model
@@ -706,10 +707,10 @@ formatMaskedWord word =
 
 
 -- Format guessed letters as a comma-separated list
-formatGuessedLetters : List Char -> String
-formatGuessedLetters letters =
+formatGuessedLetters : Language -> List Char -> String
+formatGuessedLetters uiLanguage letters =
     if List.isEmpty letters then
-        noneText
+        T.translate uiLanguage T.None
     else
         letters
             |> List.map (String.fromChar >> String.toUpper)
@@ -717,23 +718,23 @@ formatGuessedLetters letters =
 
 
 -- Get difficulty name for display
-getDifficultyName : Maybe Difficulty -> String
-getDifficultyName maybeDifficulty =
+getDifficultyName : Language -> Maybe Difficulty -> String
+getDifficultyName uiLanguage maybeDifficulty =
     case maybeDifficulty of
-        Just Easy -> easyText
-        Just Medium -> mediumText
-        Just Hard -> hardText
-        Nothing -> unknownText
+        Just Easy -> T.translate uiLanguage T.Easy
+        Just Medium -> T.translate uiLanguage T.Medium
+        Just Hard -> T.translate uiLanguage T.Hard
+        Nothing -> T.translate uiLanguage T.Unknown
 
 
 -- View error message if present
-viewErrorMessage : Maybe AppError -> Html Msg
-viewErrorMessage maybeError =
+viewErrorMessage : Language -> Maybe AppError -> Html Msg
+viewErrorMessage uiLanguage maybeError =
     case maybeError of
         Just error ->
             div (applyStyles errorMessageStyles)
-                [ p [] [ text (errorToString error) ]
-                , button (applyStyles clearErrorButtonStyles ++ [onClick ClearError]) [ text clearErrorText ]
+                [ p [] [ text (errorToString uiLanguage error) ]
+                , button (applyStyles clearErrorButtonStyles ++ [onClick ClearError]) [ text (T.translate uiLanguage T.ClearError) ]
                 ]
         
         Nothing ->

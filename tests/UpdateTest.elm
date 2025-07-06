@@ -34,6 +34,7 @@ suite =
                         , \m -> Expect.equal m.gameState Playing
                         , \m -> Expect.equal m.userInput ""
                         , \m -> Expect.equal m.errorMessage Nothing
+                        , \m -> Expect.equal m.uiLanguage English  -- Default UI language
                         ]
                         initialModel
             ]
@@ -379,6 +380,7 @@ suite =
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen CategorySelection
                         , \m -> Expect.equal m.selectedLanguage (Just English)
+                        , \m -> Expect.equal m.uiLanguage English
                         ]
                         updatedModel
             
@@ -391,6 +393,7 @@ suite =
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen CategorySelection
                         , \m -> Expect.equal m.selectedLanguage (Just German)
+                        , \m -> Expect.equal m.uiLanguage German
                         ]
                         updatedModel
             
@@ -403,8 +406,24 @@ suite =
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen CategorySelection
                         , \m -> Expect.equal m.selectedLanguage (Just Estonian)
+                        , \m -> Expect.equal m.uiLanguage Estonian
                         ]
                         updatedModel
+            
+            , test "UI language updates to match selected game language" <|
+                \_ ->
+                    let
+                        modelOnLanguageScreen = { initialModel | currentScreen = LanguageSelection }
+                        englishModel = updateModel (SelectLanguage English) modelOnLanguageScreen
+                        germanModel = updateModel (SelectLanguage German) modelOnLanguageScreen
+                        estonianModel = updateModel (SelectLanguage Estonian) modelOnLanguageScreen
+                    in
+                    Expect.all
+                        [ \_ -> Expect.equal englishModel.uiLanguage English
+                        , \_ -> Expect.equal germanModel.uiLanguage German
+                        , \_ -> Expect.equal estonianModel.uiLanguage Estonian
+                        ]
+                        ()
             ]
         , describe "SelectCategory message"
             [ test "transitions from CategorySelection to DifficultySelection" <|

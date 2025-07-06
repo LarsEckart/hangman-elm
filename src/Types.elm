@@ -65,6 +65,7 @@ type GameState
 type alias Model =
     { currentScreen : GameScreen
     , selectedLanguage : Maybe Language
+    , uiLanguage : Language  -- UI language that follows selected game language
     , selectedCategory : Maybe Category
     , selectedDifficulty : Maybe Difficulty
     , currentWord : Word
@@ -121,36 +122,71 @@ isValidWordForDifficulty word difficulty =
 
 
 -- Helper functions for error handling
-errorToString : AppError -> String
-errorToString error =
+errorToString : Language -> AppError -> String
+errorToString uiLanguage error =
     case error of
         NoWordsAvailable language category difficulty ->
-            "No words available for " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
+            -- Import Translations module functions
+            case uiLanguage of
+                English -> "No words available for " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
+                German -> "Keine Wörter verfügbar für " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
+                Estonian -> "Selle kombinatsiooni jaoks pole sõnu saadaval: " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
         
         SelectionIncomplete { missingLanguage, missingCategory } ->
-            if missingLanguage && missingCategory then
-                "Please select language and category first"
-            else if missingLanguage then
-                "Please select a language first"
-            else
-                "Please select a category first"
+            case uiLanguage of
+                English ->
+                    if missingLanguage && missingCategory then
+                        "Please select language and category first"
+                    else if missingLanguage then
+                        "Please select a language first"
+                    else
+                        "Please select a category first"
+                German ->
+                    if missingLanguage && missingCategory then
+                        "Bitte wählen Sie zuerst Sprache und Kategorie"
+                    else if missingLanguage then
+                        "Bitte wählen Sie zuerst eine Sprache"
+                    else
+                        "Bitte wählen Sie zuerst eine Kategorie"
+                Estonian ->
+                    if missingLanguage && missingCategory then
+                        "Palun valige esmalt keel ja kategooria"
+                    else if missingLanguage then
+                        "Palun valige esmalt keel"
+                    else
+                        "Palun valige esmalt kategooria"
         
         InvalidGuess guessError ->
             case guessError of
                 EmptyInput ->
-                    "Please enter a letter"
+                    case uiLanguage of
+                        English -> "Please enter a letter"
+                        German -> "Bitte geben Sie einen Buchstaben ein"
+                        Estonian -> "Palun sisestage täht"
                 
                 MultipleCharacters input ->
-                    "Please enter only one letter"
+                    case uiLanguage of
+                        English -> "Please enter only one letter"
+                        German -> "Bitte geben Sie nur einen Buchstaben ein"
+                        Estonian -> "Palun sisestage ainult üks täht"
                 
                 NonAlphabetic input ->
-                    "Please enter only letters"
+                    case uiLanguage of
+                        English -> "Please enter only letters"
+                        German -> "Bitte geben Sie nur Buchstaben ein"
+                        Estonian -> "Palun sisestage ainult tähti"
                 
                 AlreadyGuessed char ->
-                    "You already guessed that letter"
+                    case uiLanguage of
+                        English -> "You already guessed that letter"
+                        German -> "Sie haben diesen Buchstaben bereits geraten"
+                        Estonian -> "Te olete selle tähe juba arvanud"
         
         GameStateError message ->
-            "Game error: " ++ message
+            case uiLanguage of
+                English -> "Game error: " ++ message
+                German -> "Spielfehler: " ++ message
+                Estonian -> "Mängu viga: " ++ message
 
 
 -- Helper function to validate user input and return appropriate error
@@ -191,6 +227,7 @@ initialModel : Model
 initialModel =
     { currentScreen = Start
     , selectedLanguage = Nothing
+    , uiLanguage = English  -- Default UI language
     , selectedCategory = Nothing
     , selectedDifficulty = Nothing
     , currentWord = ""
