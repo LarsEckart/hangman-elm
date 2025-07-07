@@ -54,9 +54,6 @@ isLetterGuessed : Char -> GuessedLetters -> Bool
 isLetterGuessed letter (GuessedLetters chars) =
     List.member (Char.toUpper letter) chars
 
-guessedLettersLength : GuessedLetters -> Int
-guessedLettersLength (GuessedLetters chars) =
-    List.length chars
 type alias RemainingGuesses = Int
 type alias UserInput = String
 
@@ -152,28 +149,7 @@ maxGuesses : Int
 maxGuesses = 6
 
 
--- Helper functions for difficulty word length validation
-getDifficultyWordLength : Difficulty -> { min : Int, max : Int }
-getDifficultyWordLength difficulty =
-    case difficulty of
-        Easy ->
-            { min = 3, max = 5 }
-        
-        Medium ->
-            { min = 6, max = 8 }
-        
-        Hard ->
-            { min = 9, max = 15 }
 
-
--- Helper function to check if a word matches difficulty requirements
-isValidWordForDifficulty : Word -> Difficulty -> Bool
-isValidWordForDifficulty word difficulty =
-    let
-        length = wordLength word
-        { min, max } = getDifficultyWordLength difficulty
-    in
-    length >= min && length <= max
 
 
 -- Helper functions for error handling
