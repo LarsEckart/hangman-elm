@@ -34,7 +34,6 @@ suite =
                             , guessedLetters = guessedLettersFromList ['C', 'A', 'T']
                             , remainingGuesses = 3
                             , gameState = Won
-                            , selectedDifficulty = Just Easy
                             }
                         updatedModel = updateModel PlayAgain gameOverModel
                     in
@@ -46,7 +45,6 @@ suite =
                         , \m -> Expect.equal m.gameState Playing
                         , \m -> Expect.equal m.userInput ""
                         , \m -> Expect.equal m.errorMessage Nothing
-                        , \m -> Expect.equal m.selectedDifficulty Nothing
                         , \m -> Expect.equal m.selectedLanguage Nothing
                         , \m -> Expect.equal m.selectedCategory Nothing
                         ]
@@ -64,7 +62,6 @@ suite =
                             , gameState = Won
                             , selectedLanguage = Just English
                             , selectedCategory = Just Animals
-                            , selectedDifficulty = Just Easy
                             }
                         updatedModel = updateModel PlayAgain gameOverModel
                     in
@@ -75,37 +72,35 @@ suite =
                         , \m -> Expect.equal m.gameState Playing
                         , \m -> Expect.equal m.userInput ""
                         , \m -> Expect.equal m.errorMessage Nothing
-                        , \m -> Expect.equal m.selectedDifficulty (Just Easy)
                         , \m -> Expect.equal m.selectedLanguage (Just English)
                         , \m -> Expect.equal m.selectedCategory (Just Animals)
                         ]
                         updatedModel
             ]
         , describe "Edge cases and error conditions"
-            [ test "SelectDifficulty handles no words available scenario" <|
+            [ test "SelectCategory handles no words available scenario" <|
                 \_ ->
                     let
                         modelWithSelections = 
                             { initialModel 
-                            | currentScreen = DifficultySelection
+                            | currentScreen = CategorySelection
                             , selectedLanguage = Just Estonian  -- Might have limited words
-                            , selectedCategory = Just Sport
                             }
-                        updatedModel = updateModel (SelectDifficulty Hard) modelWithSelections
+                        updatedModel = updateModel (SelectCategory Sport) modelWithSelections
                     in
                     -- Should either generate a random word or show error - depends on word availability
                     Expect.notEqual updatedModel.currentScreen Start  -- Should not crash
             
-            , test "SelectDifficulty with both language and category missing" <|
+            , test "SelectCategory with language missing" <|
                 \_ ->
                     let
                         modelWithoutSelections = 
                             { initialModel 
-                            | currentScreen = DifficultySelection
+                            | currentScreen = CategorySelection
                             }
-                        updatedModel = updateModel (SelectDifficulty Easy) modelWithoutSelections
+                        updatedModel = updateModel (SelectCategory Animals) modelWithoutSelections
                     in
-                    Expect.equal updatedModel.errorMessage (Just (SelectionIncomplete { missingLanguage = True, missingCategory = True }))
+                    Expect.equal updatedModel.errorMessage (Just (SelectionIncomplete { missingLanguage = True, missingCategory = False }))
             
             , test "MakeGuess with winning guess on single letter word" <|
                 \_ ->

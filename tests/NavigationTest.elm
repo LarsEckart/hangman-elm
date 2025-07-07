@@ -95,7 +95,7 @@ suite =
                         ()
             ]
         , describe "SelectCategory message"
-            [ test "transitions from CategorySelection to DifficultySelection" <|
+            [ test "loads word list and stays on CategorySelection until word is selected" <|
                 \_ ->
                     let
                         modelOnCategoryScreen = 
@@ -106,8 +106,9 @@ suite =
                         updatedModel = updateModel (SelectCategory Animals) modelOnCategoryScreen
                     in
                     Expect.all
-                        [ \m -> Expect.equal m.currentScreen DifficultySelection
+                        [ \m -> Expect.equal m.currentScreen CategorySelection
                         , \m -> Expect.equal m.selectedCategory (Just Animals)
+                        , \m -> Expect.notEqual m.wordList []
                         ]
                         updatedModel
             
@@ -122,8 +123,9 @@ suite =
                         updatedModel = updateModel (SelectCategory Food) modelOnCategoryScreen
                     in
                     Expect.all
-                        [ \m -> Expect.equal m.currentScreen DifficultySelection
+                        [ \m -> Expect.equal m.currentScreen CategorySelection
                         , \m -> Expect.equal m.selectedCategory (Just Food)
+                        , \m -> Expect.notEqual m.wordList []
                         ]
                         updatedModel
             
@@ -138,53 +140,30 @@ suite =
                         updatedModel = updateModel (SelectCategory Sport) modelOnCategoryScreen
                     in
                     Expect.all
-                        [ \m -> Expect.equal m.currentScreen DifficultySelection
+                        [ \m -> Expect.equal m.currentScreen CategorySelection
                         , \m -> Expect.equal m.selectedCategory (Just Sport)
-                        ]
-                        updatedModel
-            ]
-        , describe "SelectDifficulty message"
-            [ test "selects difficulty and loads embedded words when language and category are selected" <|
-                \_ ->
-                    let
-                        modelWithSelections = 
-                            { initialModel 
-                            | currentScreen = DifficultySelection
-                            , selectedLanguage = Just English
-                            , selectedCategory = Just Animals
-                            }
-                        updatedModel = updateModel (SelectDifficulty Easy) modelWithSelections
-                    in
-                    Expect.all
-                        [ \m -> Expect.equal m.selectedDifficulty (Just Easy)
-                        , \m -> Expect.equal m.errorMessage Nothing
                         , \m -> Expect.notEqual m.wordList []
                         ]
                         updatedModel
-            
-            , test "shows error when language not selected" <|
+            ]
+        , describe "WordSelected message"
+            [ test "transitions from CategorySelection to Game screen" <|
                 \_ ->
                     let
-                        modelWithoutLanguage = 
+                        modelWithWordList = 
                             { initialModel 
-                            | currentScreen = DifficultySelection
-                            , selectedCategory = Just Animals
-                            }
-                        updatedModel = updateModel (SelectDifficulty Easy) modelWithoutLanguage
-                    in
-                    Expect.equal updatedModel.errorMessage (Just (SelectionIncomplete { missingLanguage = True, missingCategory = False }))
-            
-            , test "shows error when category not selected" <|
-                \_ ->
-                    let
-                        modelWithoutCategory = 
-                            { initialModel 
-                            | currentScreen = DifficultySelection
+                            | currentScreen = CategorySelection
                             , selectedLanguage = Just English
+                            , selectedCategory = Just Animals
+                            , wordList = ["CAT", "DOG", "BIRD"]
                             }
-                        updatedModel = updateModel (SelectDifficulty Easy) modelWithoutCategory
+                        updatedModel = updateModel (WordSelected 1) modelWithWordList
                     in
-                    Expect.equal updatedModel.errorMessage (Just (SelectionIncomplete { missingLanguage = False, missingCategory = True }))
+                    Expect.all
+                        [ \m -> Expect.equal m.currentScreen Game
+                        , \m -> Expect.equal (wordToString m.currentWord) "DOG"
+                        ]
+                        updatedModel
             ]
         , describe "BackToStart message"
             [ test "resets to initial state and transitions to Start screen" <|
@@ -196,7 +175,6 @@ suite =
                             , currentWord = wordFromString "CAT"
                             , guessedLetters = guessedLettersFromList ['C', 'A']
                             , remainingGuesses = 4
-                            , selectedDifficulty = Just Medium
                             , userInput = "test"
                             }
                         updatedModel = updateModel BackToStart gameModel
@@ -209,7 +187,6 @@ suite =
                         , \m -> Expect.equal m.gameState Playing
                         , \m -> Expect.equal m.userInput ""
                         , \m -> Expect.equal m.errorMessage Nothing
-                        , \m -> Expect.equal m.selectedDifficulty Nothing
                         ]
                         updatedModel
             ]

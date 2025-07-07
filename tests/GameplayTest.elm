@@ -211,13 +211,12 @@ suite =
                     let
                         modelWithWordList = 
                             { initialModel 
-                            | currentScreen = DifficultySelection
+                            | currentScreen = CategorySelection
                             , selectedLanguage = Just English
                             , selectedCategory = Just Animals
-                            , selectedDifficulty = Just Easy
                             , wordList = ["CAT", "DOG", "BIRD"]
                             }
-                        updatedModel = updateModel (WordSelected Easy 1) modelWithWordList
+                        updatedModel = updateModel (WordSelected 1) modelWithWordList
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game
@@ -230,13 +229,12 @@ suite =
                     let
                         modelWithWordList = 
                             { initialModel 
-                            | currentScreen = DifficultySelection
+                            | currentScreen = CategorySelection
                             , selectedLanguage = Just English
                             , selectedCategory = Just Animals
-                            , selectedDifficulty = Just Easy
                             , wordList = ["CAT", "DOG", "BIRD"]
                             }
-                        updatedModel = updateModel (WordSelected Easy 0) modelWithWordList
+                        updatedModel = updateModel (WordSelected 0) modelWithWordList
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game
@@ -249,13 +247,12 @@ suite =
                     let
                         modelWithWordList = 
                             { initialModel 
-                            | currentScreen = DifficultySelection
+                            | currentScreen = CategorySelection
                             , selectedLanguage = Just English
                             , selectedCategory = Just Animals
-                            , selectedDifficulty = Just Easy
                             , wordList = ["CAT", "DOG", "BIRD"]
                             }
-                        updatedModel = updateModel (WordSelected Easy 10) modelWithWordList
+                        updatedModel = updateModel (WordSelected 10) modelWithWordList
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game
@@ -268,13 +265,12 @@ suite =
                     let
                         modelWithEmptyWordList = 
                             { initialModel 
-                            | currentScreen = DifficultySelection
+                            | currentScreen = CategorySelection
                             , selectedLanguage = Just English
                             , selectedCategory = Just Animals
-                            , selectedDifficulty = Just Easy
                             , wordList = []
                             }
-                        updatedModel = updateModel (WordSelected Easy 0) modelWithEmptyWordList
+                        updatedModel = updateModel (WordSelected 0) modelWithEmptyWordList
                     in
                     Expect.all
                         [ \m -> Expect.equal m.currentScreen Game

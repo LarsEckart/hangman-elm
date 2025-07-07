@@ -27,7 +27,6 @@ suite =
             \_ ->
                 Expect.all
                     [ \m -> Expect.equal m.currentScreen Start
-                    , \m -> Expect.equal m.selectedDifficulty Nothing
                     , \m -> Expect.equal (wordToString m.currentWord) ""
                     , \m -> Expect.equal (guessedLettersToList m.guessedLetters) []
                     , \m -> Expect.equal m.remainingGuesses maxGuesses

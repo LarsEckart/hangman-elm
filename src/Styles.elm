@@ -7,10 +7,6 @@ module Styles exposing
     , screenTitleStyles
     , buttonBaseStyles
     , buttonContainerStyles
-    , easyButtonStyles
-    , mediumButtonStyles
-    , hardButtonStyles
-    , difficultyDescriptionStyles
     , gameInfoStyles
     , wordDisplayStyles
     , maskedWordStyles
@@ -121,45 +117,6 @@ buttonContainerStyles =
     , ("margin", "20px 0")
     ]
 
--- Difficulty button styles
-difficultyButtonStyles : List (String, String)
-difficultyButtonStyles = 
-    buttonBaseStyles ++ 
-    [ ("display", "flex")
-    , ("flex-direction", "column")
-    , ("align-items", "center")
-    , ("padding", "16px")
-    , ("text-align", "center")
-    ]
-
--- Easy button styles
-easyButtonStyles : List (String, String)
-easyButtonStyles = 
-    difficultyButtonStyles ++
-    [ ("background", "#4CAF50")
-    ]
-
--- Medium button styles
-mediumButtonStyles : List (String, String)
-mediumButtonStyles = 
-    difficultyButtonStyles ++
-    [ ("background", "#FF9800")
-    ]
-
--- Hard button styles
-hardButtonStyles : List (String, String)
-hardButtonStyles = 
-    difficultyButtonStyles ++
-    [ ("background", "#f44336")
-    ]
-
--- Difficulty description styles
-difficultyDescriptionStyles : List (String, String)
-difficultyDescriptionStyles = 
-    [ ("font-size", "0.8rem")
-    , ("margin", "4px 0 0 0")
-    , ("opacity", "0.9")
-    ]
 
 -- Game info styles (mobile-first responsive)
 gameInfoStyles : List (String, String)

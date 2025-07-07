@@ -15,16 +15,8 @@ type TranslationKey
     | Animals
     | Food
     | Sport
-    | ChooseDifficulty
-    | Easy
-    | EasyDescription
-    | Medium
-    | MediumDescription
-    | Hard
-    | HardDescription
     | Hangman
     | CategoryLabel
-    | DifficultyLabel
     | RemainingGuesses
     | GuessedLetters
     | Guess
@@ -75,16 +67,8 @@ translateEnglish key =
         Animals -> "🐾 Animals"
         Food -> "🍔 Food & Drinks"
         Sport -> "⚽ Sport"
-        ChooseDifficulty -> "Choose Difficulty"
-        Easy -> "Easy"
-        EasyDescription -> "3-5 letter words"
-        Medium -> "Medium"
-        MediumDescription -> "6-8 letter words"
-        Hard -> "Hard"
-        HardDescription -> "9+ letter words"
         Hangman -> "Hangman"
         CategoryLabel -> "Category: "
-        DifficultyLabel -> "Difficulty: "
         RemainingGuesses -> "Remaining guesses: "
         GuessedLetters -> "Guessed letters:"
         Guess -> "Guess"
@@ -122,16 +106,8 @@ translateGerman key =
         Animals -> "🐾 Tiere"
         Food -> "🍔 Essen & Trinken"
         Sport -> "⚽ Sport"
-        ChooseDifficulty -> "Schwierigkeit wählen"
-        Easy -> "Leicht"
-        EasyDescription -> "3-5 Buchstaben"
-        Medium -> "Mittel"
-        MediumDescription -> "6-8 Buchstaben"
-        Hard -> "Schwer"
-        HardDescription -> "9+ Buchstaben"
         Hangman -> "Galgenmännchen"
         CategoryLabel -> "Kategorie: "
-        DifficultyLabel -> "Schwierigkeit: "
         RemainingGuesses -> "Verbleibende Versuche: "
         GuessedLetters -> "Geratene Buchstaben:"
         Guess -> "Raten"
@@ -169,16 +145,8 @@ translateEstonian key =
         Animals -> "🐾 Loomad"
         Food -> "🍔 Toit ja joogid"
         Sport -> "⚽ Sport"
-        ChooseDifficulty -> "Vali raskusaste"
-        Easy -> "Kerge"
-        EasyDescription -> "3-5 tähte"
-        Medium -> "Keskmine"
-        MediumDescription -> "6-8 tähte"
-        Hard -> "Raske"
-        HardDescription -> "9+ tähte"
         Hangman -> "Poomismäng"
         CategoryLabel -> "Kategooria: "
-        DifficultyLabel -> "Raskusaste: "
         RemainingGuesses -> "Järelejäänud katsed: "
         GuessedLetters -> "Arvatud tähed:"
         Guess -> "Arva"

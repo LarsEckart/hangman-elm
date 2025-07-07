@@ -27,9 +27,6 @@ update msg model =
         SelectCategory category ->
             handleSelectCategory category model
         
-        SelectDifficulty difficulty ->
-            handleSelectDifficulty difficulty model
-        
         UpdateInput input ->
             handleUpdateInput input model
         
@@ -48,8 +45,8 @@ update msg model =
         ClearError ->
             handleClearError model
         
-        WordSelected difficulty index ->
-            handleWordSelected difficulty index model
+        WordSelected index ->
+            handleWordSelected index model
 
 
 -- Main view function
@@ -65,9 +62,6 @@ view model =
             
             CategorySelection ->
                 viewCategorySelection model.uiLanguage
-            
-            DifficultySelection ->
-                viewDifficultySelection model
             
             Game ->
                 viewGameScreen model

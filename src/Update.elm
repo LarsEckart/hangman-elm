@@ -2,7 +2,6 @@ module Update exposing
     ( handleStartGame
     , handleSelectLanguage
     , handleSelectCategory
-    , handleSelectDifficulty
     , handleUpdateInput
     , handleMakeGuess
     , handleGuessLetter
@@ -46,43 +45,29 @@ handleSelectLanguage language model =
 -- Handle category selection
 handleSelectCategory : Category -> Model -> (Model, Cmd Msg)
 handleSelectCategory category model =
-    ( { model 
-      | selectedCategory = Just category
-      , currentScreen = DifficultySelection
-      }
-    , Cmd.none
-    )
-
-
--- Handle difficulty selection
-handleSelectDifficulty : Difficulty -> Model -> (Model, Cmd Msg)
-handleSelectDifficulty difficulty model =
-    case (model.selectedLanguage, model.selectedCategory) of
-        (Just language, Just category) ->
+    case model.selectedLanguage of
+        Just language ->
             let
-                availableWords = EmbeddedWordLists.getWordList language category difficulty
+                availableWords = EmbeddedWordLists.getWordList language category
             in
             if List.isEmpty availableWords then
-                ( { model | errorMessage = Just (NoWordsAvailable language category difficulty) }
+                ( { model | errorMessage = Just (NoWordsAvailable language category) }
                 , Cmd.none
                 )
             else
                 ( { model 
-                  | selectedDifficulty = Just difficulty
+                  | selectedCategory = Just category
                   , wordList = availableWords
                   , errorMessage = Nothing
                   }
-                , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
+                , Random.generate WordSelected (Random.int 0 (List.length availableWords - 1))
                 )
-        _ ->
-            -- This shouldn't happen in normal flow
-            let
-                missingLanguage = model.selectedLanguage == Nothing
-                missingCategory = model.selectedCategory == Nothing
-            in
-            ( { model | errorMessage = Just (SelectionIncomplete { missingLanguage = missingLanguage, missingCategory = missingCategory }) }
+        Nothing ->
+            ( { model | errorMessage = Just (SelectionIncomplete { missingLanguage = True, missingCategory = False }) }
             , Cmd.none 
             )
+
+
 
 
 -- Handle input updates
@@ -151,15 +136,15 @@ handleMakeGuess model =
 -- Handle playing again
 handlePlayAgain : Model -> (Model, Cmd Msg)
 handlePlayAgain model =
-    case (model.selectedLanguage, model.selectedCategory, model.selectedDifficulty) of
-        (Just language, Just category, Just difficulty) ->
+    case (model.selectedLanguage, model.selectedCategory) of
+        (Just language, Just category) ->
             let
-                availableWords = EmbeddedWordLists.getWordList language category difficulty
+                availableWords = EmbeddedWordLists.getWordList language category
                 resetModel = resetGame model
             in
             if List.isEmpty availableWords then
                 -- This shouldn't happen since we already played a game, but handle it gracefully
-                ( { resetModel | errorMessage = Just (NoWordsAvailable language category difficulty) }
+                ( { resetModel | errorMessage = Just (NoWordsAvailable language category) }
                 , Cmd.none
                 )
             else
@@ -167,7 +152,7 @@ handlePlayAgain model =
                   | wordList = availableWords
                   , errorMessage = Nothing
                   }
-                , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
+                , Random.generate WordSelected (Random.int 0 (List.length availableWords - 1))
                 )
         _ ->
             -- If somehow selections are missing, fall back to starting over
@@ -234,8 +219,8 @@ handleGuessLetter letter model =
 
 
 -- Handle word selection
-handleWordSelected : Difficulty -> Int -> Model -> (Model, Cmd Msg)
-handleWordSelected difficulty index model =
+handleWordSelected : Int -> Model -> (Model, Cmd Msg)
+handleWordSelected index model =
     let
         selectedWord = 
             model.wordList

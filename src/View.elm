@@ -2,7 +2,6 @@ module View exposing
     ( viewStartScreen
     , viewLanguageSelection
     , viewCategorySelection
-    , viewDifficultySelection
     , viewGameScreen
     , viewGameOver
     )
@@ -54,27 +53,6 @@ viewCategorySelection uiLanguage =
         ]
 
 
--- Difficulty selection screen view
-viewDifficultySelection : Model -> Html Msg
-viewDifficultySelection model =
-    div (applyStyles screenStyles)
-        [ h2 (applyStyles screenTitleStyles) [ text (T.translate model.uiLanguage T.ChooseDifficulty) ]
-        , div (applyStyles buttonContainerStyles)
-            [ button (applyStyles easyButtonStyles ++ [onClick (SelectDifficulty Easy)])
-                [ text (T.translate model.uiLanguage T.Easy)
-                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.EasyDescription) ]
-                ]
-            , button (applyStyles mediumButtonStyles ++ [onClick (SelectDifficulty Medium)])
-                [ text (T.translate model.uiLanguage T.Medium)
-                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.MediumDescription) ]
-                ]
-            , button (applyStyles hardButtonStyles ++ [onClick (SelectDifficulty Hard)])
-                [ text (T.translate model.uiLanguage T.Hard)
-                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.HardDescription) ]
-                ]
-            ]
-        , viewErrorMessage model.uiLanguage model.errorMessage
-        ]
 
 
 -- Game screen view

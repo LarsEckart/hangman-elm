@@ -60,7 +60,7 @@ type alias UserInput = String
 
 -- Structured error type for better error categorization and type safety
 type AppError
-    = NoWordsAvailable Language Category Difficulty
+    = NoWordsAvailable Language Category
     | SelectionIncomplete { missingLanguage : Bool, missingCategory : Bool }
     | InvalidGuess GuessError
     | GameStateError String
@@ -79,7 +79,6 @@ type GameScreen
     = Start
     | LanguageSelection
     | CategorySelection
-    | DifficultySelection  
     | Game
     | GameOver
 
@@ -98,11 +97,6 @@ type Category
     | Sport
 
 
--- Difficulty levels with corresponding word length ranges
-type Difficulty
-    = Easy      -- 3-5 letter words
-    | Medium    -- 6-8 letter words
-    | Hard      -- 9+ letter words
 
 
 -- Game state during gameplay
@@ -118,7 +112,6 @@ type alias Model =
     , selectedLanguage : Maybe Language
     , uiLanguage : Language  -- UI language that follows selected game language
     , selectedCategory : Maybe Category
-    , selectedDifficulty : Maybe Difficulty
     , currentWord : Word
     , guessedLetters : GuessedLetters
     , remainingGuesses : RemainingGuesses
@@ -134,14 +127,13 @@ type Msg
     = StartGame
     | SelectLanguage Language
     | SelectCategory Category
-    | SelectDifficulty Difficulty
     | UpdateInput String
     | MakeGuess
     | GuessLetter Char
     | PlayAgain
     | BackToStart
     | ClearError
-    | WordSelected Difficulty Int
+    | WordSelected Int
 
 
 -- Constants for game configuration
@@ -156,12 +148,12 @@ maxGuesses = 6
 errorToString : Language -> AppError -> String
 errorToString uiLanguage error =
     case error of
-        NoWordsAvailable language category difficulty ->
+        NoWordsAvailable language category ->
             -- Import Translations module functions
             case uiLanguage of
-                English -> "No words available for " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
-                German -> "Keine Wörter verfügbar für " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
-                Estonian -> "Selle kombinatsiooni jaoks pole sõnu saadaval: " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
+                English -> "No words available for " ++ languageToString language ++ " " ++ categoryToString category
+                German -> "Keine Wörter verfügbar für " ++ languageToString language ++ " " ++ categoryToString category
+                Estonian -> "Selle kombinatsiooni jaoks pole sõnu saadaval: " ++ languageToString language ++ " " ++ categoryToString category
         
         SelectionIncomplete { missingLanguage, missingCategory } ->
             case uiLanguage of
@@ -260,7 +252,6 @@ initialModel =
     , selectedLanguage = Nothing
     , uiLanguage = English  -- Default UI language
     , selectedCategory = Nothing
-    , selectedDifficulty = Nothing
     , currentWord = wordFromString ""
     , guessedLetters = emptyGuessedLetters
     , remainingGuesses = maxGuesses
@@ -271,7 +262,7 @@ initialModel =
     }
 
 
--- Helper functions for language/category/difficulty conversions
+-- Helper functions for language/category conversions
 languageToString : Language -> String
 languageToString language =
     case language of
@@ -286,11 +277,3 @@ categoryToString category =
         Animals -> "animals"
         Food -> "food"
         Sport -> "sport"
-
-
-difficultyToString : Difficulty -> String
-difficultyToString difficulty =
-    case difficulty of
-        Easy -> "easy"
-        Medium -> "medium"
-        Hard -> "hard"
