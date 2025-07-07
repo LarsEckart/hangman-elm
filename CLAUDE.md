@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ **CRITICAL: Git Workflow**
+**ALWAYS pull main branch before starting any feature development!**
+
+```bash
+git checkout main
+git pull origin main
+# Then create feature branch
+git checkout -b feature/your-feature-name
+```
+
+This prevents merge conflicts and ensures you're working with the latest codebase structure. The main branch may have undergone significant refactoring or architectural changes.
+
 ## Project Overview
 
 This is a Hangman game implementation in Elm.
