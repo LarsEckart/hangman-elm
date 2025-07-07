@@ -63,7 +63,7 @@ type alias UserInput = String
 
 -- Structured error type for better error categorization and type safety
 type AppError
-    = NoWordsAvailable Language Category Difficulty
+    = NoWordsAvailable Language Category
     | SelectionIncomplete { missingLanguage : Bool, missingCategory : Bool }
     | InvalidGuess GuessError
     | GameStateError String
@@ -82,7 +82,6 @@ type GameScreen
     = Start
     | LanguageSelection
     | CategorySelection
-    | DifficultySelection  
     | Game
     | GameOver
 
@@ -101,12 +100,6 @@ type Category
     | Sport
 
 
--- Difficulty levels with corresponding word length ranges
-type Difficulty
-    = Easy      -- 3-5 letter words
-    | Medium    -- 6-8 letter words
-    | Hard      -- 9+ letter words
-
 
 -- Game state during gameplay
 type GameState
@@ -121,7 +114,6 @@ type alias Model =
     , selectedLanguage : Maybe Language
     , uiLanguage : Language  -- UI language that follows selected game language
     , selectedCategory : Maybe Category
-    , selectedDifficulty : Maybe Difficulty
     , currentWord : Word
     , guessedLetters : GuessedLetters
     , remainingGuesses : RemainingGuesses
@@ -137,14 +129,13 @@ type Msg
     = StartGame
     | SelectLanguage Language
     | SelectCategory Category
-    | SelectDifficulty Difficulty
     | UpdateInput String
     | MakeGuess
     | GuessLetter Char
     | PlayAgain
     | BackToStart
     | ClearError
-    | WordSelected Difficulty Int
+    | WordSelected Int
 
 
 -- Constants for game configuration
@@ -152,40 +143,17 @@ maxGuesses : Int
 maxGuesses = 6
 
 
--- Helper functions for difficulty word length validation
-getDifficultyWordLength : Difficulty -> { min : Int, max : Int }
-getDifficultyWordLength difficulty =
-    case difficulty of
-        Easy ->
-            { min = 3, max = 5 }
-        
-        Medium ->
-            { min = 6, max = 8 }
-        
-        Hard ->
-            { min = 9, max = 15 }
-
-
--- Helper function to check if a word matches difficulty requirements
-isValidWordForDifficulty : Word -> Difficulty -> Bool
-isValidWordForDifficulty word difficulty =
-    let
-        length = wordLength word
-        { min, max } = getDifficultyWordLength difficulty
-    in
-    length >= min && length <= max
-
 
 -- Helper functions for error handling
 errorToString : Language -> AppError -> String
 errorToString uiLanguage error =
     case error of
-        NoWordsAvailable language category difficulty ->
+        NoWordsAvailable language category ->
             -- Import Translations module functions
             case uiLanguage of
-                English -> "No words available for " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
-                German -> "Keine Wörter verfügbar für " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
-                Estonian -> "Selle kombinatsiooni jaoks pole sõnu saadaval: " ++ languageToString language ++ " " ++ categoryToString category ++ " " ++ difficultyToString difficulty
+                English -> "No words available for " ++ languageToString language ++ " " ++ categoryToString category
+                German -> "Keine Wörter verfügbar für " ++ languageToString language ++ " " ++ categoryToString category
+                Estonian -> "Selle kombinatsiooni jaoks pole sõnu saadaval: " ++ languageToString language ++ " " ++ categoryToString category
         
         SelectionIncomplete { missingLanguage, missingCategory } ->
             case uiLanguage of
@@ -284,7 +252,6 @@ initialModel =
     , selectedLanguage = Nothing
     , uiLanguage = English  -- Default UI language
     , selectedCategory = Nothing
-    , selectedDifficulty = Nothing
     , currentWord = wordFromString ""
     , guessedLetters = emptyGuessedLetters
     , remainingGuesses = maxGuesses
@@ -312,9 +279,3 @@ categoryToString category =
         Sport -> "sport"
 
 
-difficultyToString : Difficulty -> String
-difficultyToString difficulty =
-    case difficulty of
-        Easy -> "easy"
-        Medium -> "medium"
-        Hard -> "hard"

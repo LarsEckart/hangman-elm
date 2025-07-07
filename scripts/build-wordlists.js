@@ -74,31 +74,25 @@ function loadWordLists() {
     LANGUAGES.forEach(lang => {
         wordLists[lang] = {};
         CATEGORIES.forEach(cat => {
-            wordLists[lang][cat] = {};
-            DIFFICULTIES.forEach(diff => {
-                wordLists[lang][cat][diff] = [];
-            });
+            wordLists[lang][cat] = [];
         });
     });
 
     // Load CSV files
     LANGUAGES.forEach(language => {
         CATEGORIES.forEach(category => {
-            DIFFICULTIES.forEach(difficulty => {
-                const filename = `${language}-${category}-${difficulty}.csv`;
-                const filePath = path.join(CSV_DIR, filename);
-                totalFiles++;
+            const filename = `${language}-${category}.csv`;
+            const filePath = path.join(CSV_DIR, filename);
+            totalFiles++;
 
-                if (fs.existsSync(filePath)) {
-                    const words = parseCSV(filePath);
-                    const validWords = validateWordList(words, difficulty);
-                    wordLists[language][category][difficulty] = validWords;
-                    loadedFiles++;
-                    console.log(`✓ Loaded ${validWords.length} words from ${filename}`);
-                } else {
-                    console.warn(`⚠ Missing file: ${filename}`);
-                }
-            });
+            if (fs.existsSync(filePath)) {
+                const words = parseCSV(filePath);
+                wordLists[language][category] = words;
+                loadedFiles++;
+                console.log(`✓ Loaded ${words.length} words from ${filename}`);
+            } else {
+                console.warn(`⚠ Missing file: ${filename}`);
+            }
         });
     });
 
@@ -118,14 +112,14 @@ function generateElmCode(wordLists) {
 module Generated.WordLists exposing (..)
 
 import Dict exposing (Dict)
-import Types exposing (Language(..), Category(..), Difficulty(..))
+import Types exposing (Language(..), Category(..))
 
 
--- 3-dimensional nested Dict structure for efficient lookup
-type alias WordListDB = Dict String (Dict String (Dict String (List String)))
+-- 2-dimensional nested Dict structure for efficient lookup
+type alias WordListDB = Dict String (Dict String (List String))
 
 
--- Generated word database: language -> category -> difficulty -> word list
+-- Generated word database: language -> category -> word list
 wordListDB : WordListDB
 wordListDB = 
     Dict.fromList
@@ -134,15 +128,9 @@ wordListDB =
     // Generate language entries
     const languageEntries = LANGUAGES.map(language => {
         const categoryEntries = CATEGORIES.map(category => {
-            const difficultyEntries = DIFFICULTIES.map(difficulty => {
-                const words = wordLists[language][category][difficulty];
-                const wordList = words.map(word => `"${word.toUpperCase()}"`).join(', ');
-                return `                    ("${difficulty}", [${wordList}])`;
-            }).join('\n                , ');
-
-            return `            ("${category}", Dict.fromList
-                [ ${difficultyEntries}
-                ])`;
+            const words = wordLists[language][category];
+            const wordList = words.map(word => `"${word.toUpperCase()}"`).join(', ');
+            return `            ("${category}", [${wordList}])`;
         }).join('\n            , ');
 
         return `        ("${language}", Dict.fromList
@@ -156,12 +144,11 @@ ${languageEntries}
 
 
 -- Primary lookup function
-getWordList : Language -> Category -> Difficulty -> List String
-getWordList language category difficulty =
+getWordList : Language -> Category -> List String
+getWordList language category =
     wordListDB
         |> Dict.get (languageToString language)
         |> Maybe.andThen (Dict.get (categoryToString category))
-        |> Maybe.andThen (Dict.get (difficultyToString difficulty))
         |> Maybe.withDefault []
 
 
@@ -182,48 +169,21 @@ categoryToString category =
         Sport -> "sport"
 
 
-difficultyToString : Difficulty -> String
-difficultyToString difficulty =
-    case difficulty of
-        Easy -> "easy"
-        Medium -> "medium"
-        Hard -> "hard"
-
-
 -- Validation and utility functions
-getAvailableCombinations : List (Language, Category, Difficulty)
+getAvailableCombinations : List (Language, Category)
 getAvailableCombinations =
     let
         combinations = []
             ++ List.concatMap (\\lang -> 
-                List.concatMap (\\cat -> 
-                    List.filterMap (\\diff -> 
-                        if List.isEmpty (getWordList lang cat diff) then
-                            Nothing
-                        else
-                            Just (lang, cat, diff)
-                    ) [Easy, Medium, Hard]
+                List.filterMap (\\cat -> 
+                    if List.isEmpty (getWordList lang cat) then
+                        Nothing
+                    else
+                        Just (lang, cat)
                 ) [Animals, Food, Sport]
             ) [English, German, Estonian]
     in
     combinations
-
-
-validateWordList : List String -> Difficulty -> Bool
-validateWordList words difficulty =
-    let
-        requirements = case difficulty of
-            Easy -> { min = 3, max = 5 }
-            Medium -> { min = 6, max = 8 }
-            Hard -> { min = 9, max = 15 }
-        
-        isValidWord word =
-            let
-                length = String.length word
-            in
-            length >= requirements.min && length <= requirements.max
-    in
-    List.all isValidWord words
 `;
 
     return elmCode;
@@ -266,9 +226,7 @@ function main() {
         let totalWords = 0;
         LANGUAGES.forEach(lang => {
             CATEGORIES.forEach(cat => {
-                DIFFICULTIES.forEach(diff => {
-                    totalWords += wordLists[lang][cat][diff].length;
-                });
+                totalWords += wordLists[lang][cat].length;
             });
         });
         console.log(`📊 Total words embedded: ${totalWords}`);
@@ -284,4 +242,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { loadWordLists, generateElmCode, validateWordList };
+module.exports = { loadWordLists, generateElmCode };

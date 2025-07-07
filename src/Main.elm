@@ -31,9 +31,6 @@ update msg model =
         SelectCategory category ->
             handleSelectCategory category model
         
-        SelectDifficulty difficulty ->
-            handleSelectDifficulty difficulty model
-        
         UpdateInput input ->
             handleUpdateInput input model
         
@@ -52,8 +49,8 @@ update msg model =
         ClearError ->
             handleClearError model
         
-        WordSelected difficulty index ->
-            handleWordSelected difficulty index model
+        WordSelected index ->
+            handleWordSelected index model
 
 
 -- MESSAGE HANDLERS
@@ -81,46 +78,34 @@ handleSelectLanguage language model =
     )
 
 
--- Handle category selection
+-- Handle category selection and start game immediately
 handleSelectCategory : Category -> Model -> (Model, Cmd Msg)
 handleSelectCategory category model =
-    ( { model 
-      | selectedCategory = Just category
-      , currentScreen = DifficultySelection
-      }
-    , Cmd.none
-    )
-
-
--- Handle difficulty selection
-handleSelectDifficulty : Difficulty -> Model -> (Model, Cmd Msg)
-handleSelectDifficulty difficulty model =
-    case (model.selectedLanguage, model.selectedCategory) of
-        (Just language, Just category) ->
+    case model.selectedLanguage of
+        Just language ->
             let
-                availableWords = EmbeddedWordLists.getWordList language category difficulty
+                wordList = EmbeddedWordLists.getWordList language category
+                wordCount = List.length wordList
             in
-            if List.isEmpty availableWords then
-                ( { model | errorMessage = Just (NoWordsAvailable language category difficulty) }
-                , Cmd.none
+            if wordCount > 0 then
+                ( { model | selectedCategory = Just category }
+                , Random.generate WordSelected (Random.int 0 (wordCount - 1))
                 )
             else
                 ( { model 
-                  | selectedDifficulty = Just difficulty
-                  , wordList = availableWords
-                  , errorMessage = Nothing
+                  | selectedCategory = Just category
+                  , errorMessage = Just (NoWordsAvailable language category)
                   }
-                , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
+                , Cmd.none
                 )
-        _ ->
-            -- This shouldn't happen in normal flow
-            let
-                missingLanguage = model.selectedLanguage == Nothing
-                missingCategory = model.selectedCategory == Nothing
-            in
-            ( { model | errorMessage = Just (SelectionIncomplete { missingLanguage = missingLanguage, missingCategory = missingCategory }) }
-            , Cmd.none 
+        
+        Nothing ->
+            ( { model 
+              | errorMessage = Just (SelectionIncomplete { missingLanguage = True, missingCategory = False })
+              }
+            , Cmd.none
             )
+
 
 
 -- Handle input updates
@@ -189,15 +174,15 @@ handleMakeGuess model =
 -- Handle playing again
 handlePlayAgain : Model -> (Model, Cmd Msg)
 handlePlayAgain model =
-    case (model.selectedLanguage, model.selectedCategory, model.selectedDifficulty) of
-        (Just language, Just category, Just difficulty) ->
+    case (model.selectedLanguage, model.selectedCategory) of
+        (Just language, Just category) ->
             let
-                availableWords = EmbeddedWordLists.getWordList language category difficulty
+                availableWords = EmbeddedWordLists.getWordList language category
                 resetModel = resetGame model
             in
             if List.isEmpty availableWords then
                 -- This shouldn't happen since we already played a game, but handle it gracefully
-                ( { resetModel | errorMessage = Just (NoWordsAvailable language category difficulty) }
+                ( { resetModel | errorMessage = Just (NoWordsAvailable language category) }
                 , Cmd.none
                 )
             else
@@ -205,7 +190,7 @@ handlePlayAgain model =
                   | wordList = availableWords
                   , errorMessage = Nothing
                   }
-                , Random.generate (WordSelected difficulty) (Random.int 0 (List.length availableWords - 1))
+                , Random.generate WordSelected (Random.int 0 (List.length availableWords - 1))
                 )
         _ ->
             -- If somehow selections are missing, fall back to starting over
@@ -272,21 +257,31 @@ handleGuessLetter letter model =
 
 
 -- Handle word selection
-handleWordSelected : Difficulty -> Int -> Model -> (Model, Cmd Msg)
-handleWordSelected difficulty index model =
-    let
-        selectedWord = 
-            model.wordList
-                |> List.drop index
-                |> List.head
-                |> Maybe.withDefault ""
-    in
-    ( { model 
-      | currentScreen = Game
-      , currentWord = wordFromString selectedWord
-      }
-    , Cmd.none
-    )
+handleWordSelected : Int -> Model -> (Model, Cmd Msg)
+handleWordSelected index model =
+    case (model.selectedLanguage, model.selectedCategory) of
+        (Just language, Just category) ->
+            let
+                wordList = EmbeddedWordLists.getWordList language category
+                selectedWord = 
+                    wordList
+                        |> List.drop index
+                        |> List.head
+                        |> Maybe.withDefault ""
+            in
+            ( { model 
+              | currentScreen = Game
+              , currentWord = wordFromString selectedWord
+              , wordList = wordList
+              }
+            , Cmd.none
+            )
+        
+        _ ->
+            -- This shouldn't happen but handle gracefully
+            ( { model | currentScreen = Start }
+            , Cmd.none
+            )
         
 
 
@@ -328,27 +323,6 @@ viewCategorySelection uiLanguage =
         ]
 
 
--- Difficulty selection screen view
-viewDifficultySelection : Model -> Html Msg
-viewDifficultySelection model =
-    div (applyStyles screenStyles)
-        [ h2 (applyStyles screenTitleStyles) [ text (T.translate model.uiLanguage T.ChooseDifficulty) ]
-        , div (applyStyles buttonContainerStyles)
-            [ button (applyStyles easyButtonStyles ++ [onClick (SelectDifficulty Easy)])
-                [ text (T.translate model.uiLanguage T.Easy)
-                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.EasyDescription) ]
-                ]
-            , button (applyStyles mediumButtonStyles ++ [onClick (SelectDifficulty Medium)])
-                [ text (T.translate model.uiLanguage T.Medium)
-                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.MediumDescription) ]
-                ]
-            , button (applyStyles hardButtonStyles ++ [onClick (SelectDifficulty Hard)])
-                [ text (T.translate model.uiLanguage T.Hard)
-                , p (applyStyles difficultyDescriptionStyles) [ text (T.translate model.uiLanguage T.HardDescription) ]
-                ]
-            ]
-        , viewErrorMessage model.uiLanguage model.errorMessage
-        ]
 
 
 -- Game screen view
@@ -408,9 +382,6 @@ view model =
             
             CategorySelection ->
                 viewCategorySelection model.uiLanguage
-            
-            DifficultySelection ->
-                viewDifficultySelection model
             
             Game ->
                 viewGameScreen model
@@ -517,45 +488,6 @@ buttonContainerStyles =
     , ("margin", "20px 0")
     ]
 
--- Difficulty button styles
-difficultyButtonStyles : List (String, String)
-difficultyButtonStyles = 
-    buttonBaseStyles ++ 
-    [ ("display", "flex")
-    , ("flex-direction", "column")
-    , ("align-items", "center")
-    , ("padding", "16px")
-    , ("text-align", "center")
-    ]
-
--- Easy button styles
-easyButtonStyles : List (String, String)
-easyButtonStyles = 
-    difficultyButtonStyles ++
-    [ ("background", "#4CAF50")
-    ]
-
--- Medium button styles
-mediumButtonStyles : List (String, String)
-mediumButtonStyles = 
-    difficultyButtonStyles ++
-    [ ("background", "#FF9800")
-    ]
-
--- Hard button styles
-hardButtonStyles : List (String, String)
-hardButtonStyles = 
-    difficultyButtonStyles ++
-    [ ("background", "#f44336")
-    ]
-
--- Difficulty description styles
-difficultyDescriptionStyles : List (String, String)
-difficultyDescriptionStyles = 
-    [ ("font-size", "0.8rem")
-    , ("margin", "4px 0 0 0")
-    , ("opacity", "0.9")
-    ]
 
 -- Game info styles (mobile-first responsive)
 gameInfoStyles : List (String, String)
@@ -819,14 +751,6 @@ formatGuessedLetters uiLanguage guessedLetters =
             |> String.join ", "
 
 
--- Get difficulty name for display
-getDifficultyName : Language -> Maybe Difficulty -> String
-getDifficultyName uiLanguage maybeDifficulty =
-    case maybeDifficulty of
-        Just Easy -> T.translate uiLanguage T.Easy
-        Just Medium -> T.translate uiLanguage T.Medium
-        Just Hard -> T.translate uiLanguage T.Hard
-        Nothing -> T.translate uiLanguage T.Unknown
 
 
 -- Get category name for display
