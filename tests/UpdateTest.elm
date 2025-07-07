@@ -4,7 +4,7 @@ import Test exposing (..)
 import Expect exposing (Expectation)
 import Types exposing (..)
 import Types exposing (wordFromString, wordToString, guessedLettersFromList, guessedLettersToList)
-import Main exposing (update, init)
+import Main exposing (init, update)
 
 
 -- Helper function to get the initial model from init
