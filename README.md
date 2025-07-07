@@ -62,7 +62,6 @@ Or directly:
 ```bash
 elm-test
 ```
-```
 
 ## Deployment
 
