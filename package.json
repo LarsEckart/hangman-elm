@@ -1,6 +1,6 @@
 {
   "name": "hangman-elm",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A Hangman game implementation in Elm with multi-language support",
   "scripts": {
     "build-wordlists": "node scripts/build-wordlists.js",
