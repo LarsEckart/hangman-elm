@@ -1,12 +1,11 @@
 module Main exposing (main, update, init)
 
 import Browser
-import Html exposing (Html, div, h1, h2, p, button, input, text, span)
-import Html.Attributes exposing (class, type_, value, placeholder, disabled, style)
-import Html.Events exposing (onClick, onInput)
+import Html exposing (Html, div, h1, h2, p, button, text)
+import Html.Attributes exposing (class, style, disabled)
+import Html.Events exposing (onClick)
 import Random
 import Types exposing (..)
-import Types exposing (wordFromString, wordToString, GuessedLetters, emptyGuessedLetters, addGuessedLetter, isLetterGuessed, guessedLettersToList)
 import GameLogic exposing (..)
 import Generated.WordLists as EmbeddedWordLists
 import Translations as T
@@ -586,53 +585,6 @@ maskedWordStyles =
     , ("font-family", "'Courier New', monospace")
     ]
 
--- Guessed letters container styles
-guessedLettersStyles : List (String, String)
-guessedLettersStyles = 
-    [ ("margin", "20px 0")
-    , ("padding", "15px")
-    , ("background", "#f8f9fa")
-    , ("border-radius", "8px")
-    , ("border", "1px solid #e9ecef")
-    ]
-
--- Guessed letters title styles
-guessedTitleStyles : List (String, String)
-guessedTitleStyles = 
-    [ ("font-size", "0.9rem")
-    , ("color", "#666")
-    , ("margin", "0 0 5px 0")
-    ]
-
--- Guessed letters list styles
-guessedListStyles : List (String, String)
-guessedListStyles = 
-    [ ("font-size", "1rem")
-    , ("color", "#333")
-    , ("margin", "0")
-    , ("font-family", "'Courier New', monospace")
-    ]
-
--- Guess input container styles
-guessInputStyles : List (String, String)
-guessInputStyles = 
-    [ ("display", "flex")
-    , ("flex-direction", "column")
-    , ("gap", "10px")
-    , ("margin", "20px 0")
-    ]
-
--- Letter input styles
-letterInputStyles : List (String, String)
-letterInputStyles = 
-    [ ("padding", "12px")
-    , ("border", "2px solid #ddd")
-    , ("border-radius", "8px")
-    , ("font-size", "1rem")
-    , ("text-align", "center")
-    , ("outline", "none")
-    , ("transition", "border-color 0.3s ease")
-    ]
 
 -- Game result styles
 gameResultStyles : List (String, String)
@@ -792,9 +744,6 @@ applyStyles : List (String, String) -> List (Html.Attribute msg)
 applyStyles styles =
     List.map (\(prop, val) -> style prop val) styles
 
--- REUSABLE VIEW COMPONENTS (no longer needed with inline styles)
-
-
 -- HELPER FUNCTIONS FOR VIEW
 
 -- Format masked word with spaces between letters
@@ -819,16 +768,6 @@ formatGuessedLetters uiLanguage guessedLetters =
             |> String.join ", "
 
 
--- Get difficulty name for display
-getDifficultyName : Language -> Maybe Difficulty -> String
-getDifficultyName uiLanguage maybeDifficulty =
-    case maybeDifficulty of
-        Just Easy -> T.translate uiLanguage T.Easy
-        Just Medium -> T.translate uiLanguage T.Medium
-        Just Hard -> T.translate uiLanguage T.Hard
-        Nothing -> T.translate uiLanguage T.Unknown
-
-
 -- Get category name for display
 getCategoryName : Language -> Maybe Category -> String
 getCategoryName uiLanguage maybeCategory =
@@ -851,12 +790,6 @@ viewErrorMessage uiLanguage maybeError =
         
         Nothing ->
             text ""
-
-
--- Helper function to validate user input for making a guess
-validateGuess : String -> GuessedLetters -> Result AppError Char
-validateGuess input guessedLetters =
-    validateUserInput input guessedLetters
 
 
 -- Get alphabet for specific language
