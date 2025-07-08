@@ -8,7 +8,8 @@
     "dev": "npm run build-wordlists && elm make src/Main.elm --output=dist/index.html && node scripts/add-viewport.js && elm reactor",
     "build": "npm run build-wordlists && npm run build-sw && elm make src/Main.elm --output=dist/index.html && node scripts/add-viewport.js",
     "test": "elm-test",
-    "watch": "nodemon --watch src/wordlists --ext csv --exec 'npm run build-wordlists'"
+    "watch": "nodemon --watch src/wordlists --ext csv --exec 'npm run build-wordlists'",
+    "format": "elm-format --yes src/ tests/"
   },
   "keywords": [
     "elm",
@@ -19,6 +20,7 @@
   "author": "Lars",
   "license": "MIT",
   "devDependencies": {
+    "elm-format": "^0.8.8",
     "nodemon": "^3.0.0"
   },
   "repository": {
