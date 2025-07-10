@@ -31,11 +31,6 @@ wordToList (Word str) =
     String.toList str
 
 
-wordLength : Word -> Int
-wordLength (Word str) =
-    String.length str
-
-
 
 -- Opaque type for GuessedLetters to ensure type safety and guarantee uppercase
 
