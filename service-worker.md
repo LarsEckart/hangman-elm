@@ -23,7 +23,8 @@ A template file with placeholder for automatic version injection:
 const CACHE_NAME = 'hangman-{{VERSION}}';
 const urlsToCache = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/elm.js'
 ];
 
 // Install event: Cache the application files
@@ -66,14 +67,18 @@ self.addEventListener('fetch', event => {
       .then(response => {
         // Return cached version if available
         if (response) {
+          console.log('Serving from cache:', event.request.url);
           return response;
         }
-        // Otherwise fetch from network
-        return fetch(event.request);
-      })
-      .catch(() => {
-        // If both cache and network fail, return offline page
-        console.log('Both cache and network failed for:', event.request.url);
+        // Otherwise try to fetch from network
+        return fetch(event.request).catch(() => {
+          // If network fails, try to serve the main page for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          console.log('Failed to serve:', event.request.url);
+          throw new Error('Network error and no cache available');
+        });
       })
   );
 });
@@ -280,10 +285,13 @@ Update `urlsToCache` in `sw-template.js`:
 const urlsToCache = [
   '/',
   '/index.html',
+  '/elm.js',           // Required for Elm apps
   '/assets/app.css',
   '/assets/icon.png'
 ];
 ```
+
+**Important**: Always include `/elm.js` for Elm applications, as the app cannot function offline without the compiled JavaScript.
 
 ### Change Cache Strategy
 Modify the fetch event listener for different caching strategies:
@@ -295,6 +303,68 @@ Modify the fetch event listener for different caching strategies:
 1. Create an offline page
 2. Add it to `urlsToCache`
 3. Update fetch event to serve offline page when both cache and network fail
+
+## Troubleshooting
+
+### Service Worker Not Working Offline
+
+**Problem**: App shows error when going offline instead of cached content.
+
+**Common Causes**:
+1. **Missing elm.js in cache** - Add `/elm.js` to `urlsToCache` array
+2. **Broken fetch handler** - Ensure fetch event returns proper responses
+3. **Build process issues** - Verify Service Worker is being generated correctly
+
+**Solutions**:
+```javascript
+// 1. Include all essential files
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/elm.js'  // Critical for Elm apps
+];
+
+// 2. Fix fetch handler to properly handle failures
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).catch(() => {
+          // Handle navigation requests when offline
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          throw new Error('Network error and no cache available');
+        });
+      })
+  );
+});
+```
+
+### Testing Offline Functionality
+
+1. **Load page online first** - Service Worker needs to cache resources
+2. **Check DevTools Application tab** - Verify Service Worker is active
+3. **Use offline simulation** - DevTools → Application → Service Workers → check "Offline"
+4. **Look for console messages** - Should see "Serving from cache" when offline
+
+### Build Process Issues
+
+**Problem**: CSS/styling missing after adding Service Worker.
+
+**Solution**: Update build process to preserve original HTML with styling:
+```bash
+# Instead of compiling directly to index.html
+elm make src/Main.elm --output=dist/elm.js --optimize
+cp index.html dist/
+```
+
+**Problem**: Duplicate meta tags or Service Worker scripts.
+
+**Solution**: Update enhancement script to check for existing elements before adding.
 
 ## Benefits
 
